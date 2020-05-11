@@ -1,5 +1,6 @@
 ﻿using System;
 using Serilog;
+using Serilog.Sinks.Discord;
 
 namespace PestoBot
 {
@@ -16,10 +17,9 @@ namespace PestoBot
             Log.Logger = new LoggerConfiguration()
                 .WriteTo.File("SpeedathonBotLogs/SpeedathonBot.log", rollingInterval: RollingInterval.Day)
                 .WriteTo.Console()
-                //.WriteTo.Discord(logWebhookId, logWebhookToken)
+                .WriteTo.Discord(logWebhookId, logWebhookToken)
                 .CreateLogger();
 
-            Console.WriteLine("Hello World!");
             new PestoBot().MainAsync().GetAwaiter().GetResult();
         }
     }
