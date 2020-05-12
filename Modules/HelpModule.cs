@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 
-namespace SpeedathonBot.Modules
+namespace PestoBot.Modules
 {
     public class HelpModule : ModuleBase<SocketCommandContext>
     {

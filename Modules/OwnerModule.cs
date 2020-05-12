@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Discord.Commands;
 using Discord.WebSocket;
 
-namespace SpeedathonBot.Modules
+namespace PestoBot.Modules
 {
     public class OwnerModule : ModuleBase
     {

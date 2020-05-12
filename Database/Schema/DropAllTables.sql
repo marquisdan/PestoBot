@@ -1,0 +1,9 @@
+drop table Event;
+drop table EventVolunteerAssignment;
+drop table MarathonProject;
+drop table MarathonProjectAssignment;
+drop table MarathonTask;
+drop table MarathonTaskAssignment;
+drop table Server;
+drop table ServerAdminAssignment;
+drop table User;

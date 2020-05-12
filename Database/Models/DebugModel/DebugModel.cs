@@ -1,6 +1,6 @@
-﻿using SpeedathonBot.Database.Models.Common;
+﻿using PestoBot.Database.Models.Common;
 
-namespace SpeedathonBot.Database.Models.Debug
+namespace PestoBot.Database.Models.DebugModel
 {
     public class DebugModel : AbstractPestoModel
     {

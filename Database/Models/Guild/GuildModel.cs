@@ -1,7 +1,7 @@
 ﻿using System;
-using SpeedathonBot.Database.Models.Common;
+using PestoBot.Database.Models.Common;
 
-namespace SpeedathonBot.Database.Models.Guild
+namespace PestoBot.Database.Models.Guild
 {
     class GuildModel : AbstractPestoModel
     {

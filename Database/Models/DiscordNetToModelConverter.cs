@@ -1,9 +1,9 @@
 ﻿using System;
 using Discord.WebSocket;
-using SpeedathonBot.Database.Models.Guild;
-using SpeedathonBot.Database.Repositories.Guild;
+using PestoBot.Database.Models.Guild;
+using PestoBot.Database.Repositories.Guild;
 
-namespace SpeedathonBot.Database.Models
+namespace PestoBot.Database.Models
 {
     internal static class DiscordNetToModelConverter
     {
@@ -23,14 +23,14 @@ namespace SpeedathonBot.Database.Models
             };
 
             //Check for a existing guild in the DB and sync
-            var existingGuild = new GuildRepository().GetAsync(model.Id).Result;
-            if (existingGuild != null)
-            {
-                model.Created = existingGuild.Created;
-                model.Modified = existingGuild.Modified;
-                model.JoinDate = existingGuild.JoinDate;
-                model.LastConnection = existingGuild.LastConnection;
-            }
+            //var existingGuild = new GuildRepository().GetAsync(model.Id).Result;
+            //if (existingGuild != null)
+            //{
+            //    model.Created = existingGuild.Created;
+            //    model.Modified = existingGuild.Modified;
+            //    model.JoinDate = existingGuild.JoinDate;
+            //    model.LastConnection = existingGuild.LastConnection;
+            //}
 
             return model;
         }

@@ -1,7 +1,7 @@
 ﻿using System;
-using SpeedathonBot.Database.Models.Common;
+using PestoBot.Database.Models.Common;
 
-namespace SpeedathonBot.Database.Models.SpeedrunEvent
+namespace PestoBot.Database.Models.SpeedrunEvent
 {
     class EventVolunteerAssignmentModel : AbstractPestoModel
     {

@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using SpeedathonBot.Database.Models.Common;
+using PestoBot.Database.Models.Common;
 
-namespace SpeedathonBot.Database.Models.Guild
+namespace PestoBot.Database.Models.Guild
 {
     class GuildSettingsModel : AbstractPestoModel
     {

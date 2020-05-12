@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Discord.Commands;
 
-namespace SpeedathonBot.Modules
+namespace PestoBot.Modules
 {
     public class FunModule : ModuleBase
     {

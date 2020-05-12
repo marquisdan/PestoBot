@@ -7,6 +7,9 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using PestoBot.Database.Models;
+using PestoBot.Database.Repositories.Guild;
 using PestoBot.Services;
 using Serilog;
 
@@ -14,18 +17,18 @@ namespace PestoBot
 {
     class PestoBot
     {
-        #region startup and config
         private static DiscordSocketClient _client;
         private static CommandService _commandService;
         private readonly IServiceProvider _serviceProvider;
         private readonly Microsoft.Extensions.Logging.ILogger _logger;
 
+        #region Constructor & Initialize
         public PestoBot()
         {
             _client = InitClient();
             _commandService = InitCommandService();
             _serviceProvider = ConfigureServices(_client);
-          //  _logger = _serviceProvider.GetRequiredService<ILogger<DiscordSocketClient>>();
+            _logger = _serviceProvider.GetRequiredService<ILogger<DiscordSocketClient>>();
         }
 
         /// <summary>
@@ -61,10 +64,11 @@ namespace PestoBot
                 .AddSingleton<LogService>()
                 .AddLogging(configure => configure.AddSerilog());
 
-            //map.Configure<LoggerFilterOptions>(options => options.MinLevel = LogLevel.Information);
+            map.Configure<LoggerFilterOptions>(options => options.MinLevel = LogLevel.Information);
 
             return map.BuildServiceProvider();
         }
+        #endregion
 
         /// <summary>
         /// Connects bot to server, runs services. Keeps bot connected
@@ -72,15 +76,14 @@ namespace PestoBot
         /// <returns></returns>
         public async Task MainAsync()
         {
-          //  Log.Information("Starting Up!");
-          Console.WriteLine("Starting up!");
+            Log.Information("Starting Up!");
 
             //Connect to Discord with key stored in Windows config
             await _client.LoginAsync(TokenType.Bot, Environment.GetEnvironmentVariable("KEY_PESTOBOT"));
             await _client.StartAsync();
 
             //Setup connection/disconnection logging events
-     //       _client.GuildAvailable += AnnounceConnectionAsync;
+            _client.GuildAvailable += AnnounceConnectionAsync;
             _client.GuildUnavailable += AnnounceDisconnectAsync;
 
             //Start up / init our various services
@@ -90,7 +93,45 @@ namespace PestoBot
             //Keep bot connected
             await Task.Delay(Timeout.Infinite);
         }
-        #endregion
+
+        #region Guild Connection Events
+        /// <summary>
+        /// Log when connecting to servers
+        /// </summary>
+        /// <param name="g"></param>
+        /// <returns></returns>
+        public async Task AnnounceConnectionAsync(SocketGuild g)
+        {
+            await UpdateGuildConnectionInfo(g);
+            ulong.TryParse(Environment.GetEnvironmentVariable("KEY_SPEEDATHON_TEST_SERVER"), out var testServerId);
+            var logMsg = $"Successfully connected to {g.Name} : {g.Id}";
+
+            Log.Information(logMsg);
+
+            if (g.Id == testServerId)
+            {
+                //Post in special channel when connecting to bot sandbox
+                ulong.TryParse(Environment.GetEnvironmentVariable("KEY_SPEEDATHON_LOG_CHAN_ID"), out var logChannelId);
+                var connectionLogChannel = (IMessageChannel)_client.GetChannel(logChannelId);
+                await connectionLogChannel.SendMessageAsync($"{DateTime.Now}: I am online!");
+            }
+        }
+
+        public async Task UpdateGuildConnectionInfo(SocketGuild guild)
+        {
+            var server = DiscordNetToModelConverter.SocketGuildToModel(guild);
+            var repo = new GuildRepository();
+            if (repo.ServerExists(server))
+            {
+                //Update server connection time
+                await repo.UpdateLastConnectionTime(server, DateTime.Now);
+                return;
+            }
+
+            //If no server/guild exists, make a new database entry for it and its table.
+            Log.Information($"Creating new Guild Entry: {server.Name}, {server.Id} | Owner: {server.OwnerUsername}, {server.OwnerId}");
+            await repo.SaveNewServer(server);
+        }
 
         /// <summary>
         /// Log when disconnecting from a server
@@ -103,5 +144,6 @@ namespace PestoBot
             Log.Warning(logMsg);
             return Task.CompletedTask;
         }
+        #endregion
     }
 }

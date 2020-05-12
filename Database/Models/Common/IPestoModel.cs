@@ -1,4 +1,4 @@
-﻿namespace SpeedathonBot.Database.Models.Common
+﻿namespace PestoBot.Database.Models.Common
 {
     public interface IPestoModel
     {
