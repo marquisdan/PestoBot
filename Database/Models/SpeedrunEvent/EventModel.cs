@@ -16,6 +16,8 @@ namespace PestoBot.Database.Models.SpeedrunEvent
         public string CharityName { get; set; }
         public string CharityUrl { get; set; }
         public string DonationUrl { get; set; }
+        public ulong CreatorId { get; set; }
+        public string CreatorUsername { get; set; }
         public ulong GuildId { get; set; }
     }
 }

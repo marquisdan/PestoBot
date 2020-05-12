@@ -1,5 +1,5 @@
 --
--- File generated with SQLiteStudio v3.2.1 on Tue May 12 15:53:28 2020
+-- File generated with SQLiteStudio v3.2.1 on Tue May 12 16:41:30 2020
 --
 -- Text encoding used: System
 --
@@ -35,6 +35,8 @@ CREATE TABLE Event (
     Charity           STRING,
     CharityUrl        STRING,
     DonationUrl       STRING,
+    CreatorId         BIGINT,
+    CreatorUsername   STRING,
     GuildId           BIGINT   REFERENCES Guild (Id) 
 );
 

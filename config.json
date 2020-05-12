@@ -1,6 +1,6 @@
 {
   "ConnectionStrings": {
-    "PestoDb": "Data Source=.\\PestoBot.db;Mode=ReadWriteCreate"
+    "PestoDb": "Data Source=PestoBot.db;Mode=ReadWriteCreate"
   },
   "Emotes": {
     "EscapedPesto": "<:Pesto:613072816367206430>",
