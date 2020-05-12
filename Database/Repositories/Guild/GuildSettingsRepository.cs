@@ -17,7 +17,8 @@ namespace PestoBot.Database.Repositories.Guild
             var settingsModel = new GuildSettingsModel()
             {
                 Created = DateTime.Now,
-                Modified = DateTime.Now
+                Modified = DateTime.Now,
+                GuildId = guildId
             };
             await InsertAsync(settingsModel);
         }

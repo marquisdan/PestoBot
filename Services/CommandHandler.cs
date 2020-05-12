@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Serilog;
@@ -15,29 +16,41 @@ namespace PestoBot.Services
 {
     class CommandHandler
     {
+        private IConfiguration _config;
         private DiscordSocketClient _client;
         private CommandService _commands;
         private ILogger _logger;
         private IServiceProvider _serviceProvider;
 
-        private const char CommandPrefix = '!'; //Command character
-        protected internal const ulong MWSF = 140652251206254592;
-        protected internal const ulong BotSandbox = 699621364654407700;
-        protected internal const string EscapedPesto = "<:Pesto:613072816367206430>";
-        protected internal const string EscapedDabesto = "<:Dabesto:613080034915385344>";
+        private string CommandPrefix;
+        protected internal ulong MWSF;
+        protected internal ulong BotSandbox;
+        protected internal string EscapedPesto;
+        protected internal string EscapedDabesto;
 
         public CommandHandler(IServiceProvider services)
         {
             // Virtual for mocking in test
             // ReSharper disable once VirtualMemberCallInConstructor
             InitServices(services);
+            InitFields();
+        }
+
+        private void InitFields()
+        {//_config.GetSection("SpecialGuilds").GetSection("MWSF").Value
+            CommandPrefix = _config["DefaultPrefix"];
+            EscapedPesto = _config.GetSection("Emotes").GetSection("EscapedPesto").Value;
+            EscapedDabesto = _config.GetSection("Emotes").GetSection("EscapedDabesto").Value;
+            MWSF = ulong.Parse(_config.GetSection("SpecialGuilds").GetSection("MWSF").Value);
+            BotSandbox = ulong.Parse(_config.GetSection("SpecialGuilds").GetSection("BotSandbox").Value);
         }
 
 
         protected internal virtual void InitServices(IServiceProvider services)
         {
-            _commands = services.GetRequiredService<CommandService>();
+            _config = services.GetRequiredService<IConfiguration>();
             _client = services.GetRequiredService<DiscordSocketClient>();
+            _commands = services.GetRequiredService<CommandService>();
             _logger = services.GetRequiredService<ILogger<CommandHandler>>();
             _serviceProvider = services;
         }
@@ -95,7 +108,7 @@ namespace PestoBot.Services
         /// <returns></returns>
         protected internal virtual async Task PrefixTriggers(SocketUserMessage msg, int pos)
         {
-            if (msg.HasCharPrefix(CommandPrefix, ref pos) ||
+            if (msg.HasStringPrefix(CommandPrefix, ref pos) ||
                 msg.HasMentionPrefix(_client.CurrentUser, ref pos))
             {
                 //Log for debug purposes
@@ -120,19 +133,9 @@ namespace PestoBot.Services
         {
             var guildId = GetMessageGuildId(msg);
 
-            switch (guildId)
-            {
-                case MWSF:
-                    {
-                        await AddPestoReactions(msg);
-                        break;
-                    }
-                case BotSandbox:
-                    {
-                        await AddTestReactions(msg);
-                        break;
-                    }
-            }
+            if (guildId == MWSF)
+                await AddPestoReactions(msg);
+            else if (guildId == BotSandbox) await AddTestReactions(msg);
         }
 
         protected internal virtual ulong GetMessageGuildId(SocketUserMessage msg)

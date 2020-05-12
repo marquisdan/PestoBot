@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
+using Microsoft.Data.Sqlite;
 using PestoBot.Database.Models.Guild;
 using PestoBot.Database.Repositories.Common;
 
@@ -19,7 +20,7 @@ namespace PestoBot.Database.Repositories.Guild
 
         public virtual List<GuildModel> GetExistingServers()
         {
-            using (IDbConnection db = new SQLiteConnection(LoadConnectionString()))
+            using (IDbConnection db = new SqliteConnection(LoadConnectionString()))
             {
                 var output = db.Query<GuildModel>($"select * from {TableName}");
                 return output.ToList();

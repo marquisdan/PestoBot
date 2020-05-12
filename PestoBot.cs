@@ -12,6 +12,9 @@ using PestoBot.Database.Models;
 using PestoBot.Database.Repositories.Guild;
 using PestoBot.Services;
 using Serilog;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Json;
+
 
 namespace PestoBot
 {
@@ -19,14 +22,17 @@ namespace PestoBot
     {
         private static DiscordSocketClient _client;
         private static CommandService _commandService;
+        private static IConfiguration _config;
         private readonly IServiceProvider _serviceProvider;
         private readonly Microsoft.Extensions.Logging.ILogger _logger;
+
 
         #region Constructor & Initialize
         public PestoBot()
         {
             _client = InitClient();
             _commandService = InitCommandService();
+            _config = ConfigService.BuildConfig();
             _serviceProvider = ConfigureServices(_client);
             _logger = _serviceProvider.GetRequiredService<ILogger<DiscordSocketClient>>();
         }
@@ -58,6 +64,7 @@ namespace PestoBot
         private static IServiceProvider ConfigureServices(DiscordSocketClient client)
         {
             var map = new ServiceCollection()
+                .AddSingleton(_config)
                 .AddSingleton(_client)
                 .AddSingleton(_commandService)
                 .AddSingleton<CommandHandler>()
@@ -68,6 +75,7 @@ namespace PestoBot
 
             return map.BuildServiceProvider();
         }
+
         #endregion
 
         /// <summary>

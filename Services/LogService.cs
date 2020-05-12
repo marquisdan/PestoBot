@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -10,13 +11,15 @@ namespace PestoBot.Services
 {
     class LogService
     {
-        private readonly ILogger _logger;
+        private IConfiguration _config;
         private readonly DiscordSocketClient _client;
         private readonly CommandService _commandService;
+        private readonly ILogger _logger;
 
         public LogService(IServiceProvider services)
         {
             // get the services we need via DI, and assign the fields declared above to them
+            _config = services.GetRequiredService<IConfiguration>();
             _client = services.GetRequiredService<DiscordSocketClient>();
             _commandService = services.GetRequiredService<CommandService>();
             _logger = services.GetRequiredService<ILogger<LogService>>();

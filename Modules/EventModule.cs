@@ -1,4 +1,10 @@
-﻿using Discord.Commands;
+﻿using System;
+using System.Text;
+using System.Threading.Tasks;
+using Discord;
+using Discord.Commands;
+using PestoBot.Database.Models.SpeedrunEvent;
+using PestoBot.Database.Repositories;
 
 //using SpeedathonBot.Database.Models.SpeedrunEvent;
 //using SpeedathonBot.Database.Repositories;

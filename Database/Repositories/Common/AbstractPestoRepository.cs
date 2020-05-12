@@ -9,15 +9,19 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Dapper;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using PestoBot.Database.Models.Common;
 
 namespace PestoBot.Database.Repositories.Common
 {
     public abstract class AbstractPestoRepository<T> : IPestoRepository<T> where T : IPestoModel
-    { 
+    {
+        private static IConfiguration _config;
         protected string TableName; //assigned in base classes
         protected Boolean AutoIncrementId; //Some models do not have auto-incrementing so we want to capture that
         protected readonly string GuildIdFk = "GuildId";
+        
 
         /// <summary>
         /// Constructor sets table name for each individual repo
@@ -28,6 +32,7 @@ namespace PestoBot.Database.Repositories.Common
         {
             TableName = "";
             AutoIncrementId = true;
+            _config = ConfigService.BuildConfig();
         }
 
         #region utility
@@ -38,7 +43,9 @@ namespace PestoBot.Database.Repositories.Common
         /// <returns></returns>
         protected static string LoadConnectionString(string id = "PestoDb")
         {
-            return ConfigurationManager.ConnectionStrings[id].ConnectionString;
+            //EscapedPesto = _config.GetSection("Emotes").GetSection("EscapedPesto").Value;
+            //return _config.GetSection("ConnectionStrings").GetSection("PestoDb").Value;
+            return _config.GetConnectionString("PestoDb");
         }
 
         private IEnumerable<PropertyInfo> GetProperties => typeof(T).GetProperties();
