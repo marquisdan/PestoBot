@@ -60,7 +60,7 @@ namespace PestoBot.Modules
                 {
                     var sb = new StringBuilder();
                     sb.Append($"\\|| Start: [Placeholder] \\|| End: [Placeholder] ");
-                    sb.Append($"\\||Schedule: [Link]({result.ScheduleLink})");
+                    sb.Append($"\\||Schedule: [Link]({result.ScheduleUrl})");
                     eb.AddField(result.Name, sb.ToString());
                 }
                 await ReplyAsync(null, false, eb.Build());
@@ -76,7 +76,7 @@ namespace PestoBot.Modules
         {
             var repo = new EventRepository();
             var evnt = await repo.GetEventByName(eventName, Context.Guild.Id);
-            evnt.ScheduleLink = url;
+            evnt.ScheduleUrl = url;
 
             await repo.UpdateAsync(evnt);
         }

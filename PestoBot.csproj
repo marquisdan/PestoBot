@@ -6,7 +6,7 @@
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Label="Nuget Packages">
     <PackageReference Include="Dapper" Version="2.0.35" />
     <PackageReference Include="Discord.Net" Version="2.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.3" />
@@ -19,10 +19,9 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
     <PackageReference Include="Serilog.Sinks.Discord" Version="1.0.1" />
     <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Label="MyData">
     <None Update="config.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

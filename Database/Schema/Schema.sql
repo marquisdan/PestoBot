@@ -1,5 +1,5 @@
 --
--- File generated with SQLiteStudio v3.2.1 on Fri May 8 15:13:52 2020
+-- File generated with SQLiteStudio v3.2.1 on Tue May 12 15:53:28 2020
 --
 -- Text encoding used: System
 --
@@ -23,17 +23,19 @@ CREATE TABLE DebugPerson (
 DROP TABLE IF EXISTS Event;
 
 CREATE TABLE Event (
-    Id              INTEGER  PRIMARY KEY AUTOINCREMENT,
-    Created         DATETIME,
-    Modified        DATETIME,
-    Name            STRING   UNIQUE,
-    StartDate       DATETIME,
-    EndDate         DATETIME,
-    ScheduleLink    STRING,
-    ApplicationLink STRING,
-    Charity         STRING,
-    CharityUrl      STRING,
-    GuildId         BIGINT   REFERENCES Guild (Id) 
+    Id                INTEGER  PRIMARY KEY AUTOINCREMENT,
+    Created           DATETIME,
+    Modified          DATETIME,
+    Name              STRING   UNIQUE,
+    StartDate         DATETIME,
+    EndDate           DATETIME,
+    ScheduleCloseDate DATETIME,
+    ScheduleUrl       STRING,
+    ApplicationUrl    STRING,
+    Charity           STRING,
+    CharityUrl        STRING,
+    DonationUrl       STRING,
+    GuildId           BIGINT   REFERENCES Guild (Id) 
 );
 
 
@@ -61,8 +63,9 @@ CREATE TABLE Guild (
     Modified       DATETIME,
     JoinDate       DATETIME,
     Name           STRING,
-    Owner          STRING,
-    LastConnection DATETIME
+    OwnerUsername  STRING,
+    LastConnection DATETIME,
+    OwnerId        BIGINT
 );
 
 
@@ -70,13 +73,16 @@ CREATE TABLE Guild (
 DROP TABLE IF EXISTS GuildSettings;
 
 CREATE TABLE GuildSettings (
-    Id                PRIMARY KEY
-                      NOT NULL
-                      UNIQUE,
-    Created  DATETIME,
-    Modified DATETIME,
-    Prefix   STRING   DEFAULT ('!'),
-    GuildId  BIGINT   REFERENCES Guild (Id) 
+    Id                     INTEGER  PRIMARY KEY AUTOINCREMENT
+                                    NOT NULL
+                                    UNIQUE,
+    Created                DATETIME,
+    Modified               DATETIME,
+    Prefix                 STRING   DEFAULT ('!'),
+    ProjectReminderChannel BIGINT,
+    TaskReminderChannel    BIGINT,
+    RunnerReminderChannel  BIGINT,
+    GuildId                BIGINT   REFERENCES Guild (Id) 
 );
 
 
