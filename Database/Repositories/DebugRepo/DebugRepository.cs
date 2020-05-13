@@ -21,7 +21,7 @@ namespace PestoBot.Database.Repositories.DebugRepo
         {
             //"Using" statement ensures db connection is closed. We do not have to use .dispose() or anything. 
             using (IDbConnection db = new SqliteConnection(LoadConnectionString()))
-                {
+            {
                     //Hard coded query for testing
                 var output = db.Query<DebugModel>($"select * from {TableName} ", new DynamicParameters());
                 return output.ToList();
