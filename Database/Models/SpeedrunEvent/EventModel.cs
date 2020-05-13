@@ -13,7 +13,7 @@ namespace PestoBot.Database.Models.SpeedrunEvent
         public DateTime ScheduleCloseDate { get; set; }
         public string ScheduleUrl { get; set; }
         public string ApplicationUrl { get; set; }
-        public string CharityName { get; set; }
+        public string Charity { get; set; }
         public string CharityUrl { get; set; }
         public string DonationUrl { get; set; }
         public ulong CreatorId { get; set; }

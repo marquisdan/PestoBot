@@ -24,12 +24,13 @@ namespace PestoBot.Database.Repositories
             await InsertAsync(evnt);
         }
 
-        public virtual async Task<List<EventModel>> GetAllEventsByGuild(ulong GuildId)
+        public virtual async Task<List<EventModel>> GetAllEventsByGuild(ulong guildId)
         {
             using (IDbConnection db = new SqliteConnection(LoadConnectionString()))
             {
-                var query = $"Select * from {TableName} where {GuildIdFk} =  {GuildId}";
-                return db.QueryAsync<EventModel>(query).Result.ToList();
+                var query = $"Select * from {TableName} where {GuildIdFk} = @GuildId";
+                var dynamicParams = new DynamicParameters(new EventModel() { GuildId = guildId });
+                return db.QueryAsync<EventModel>(query, dynamicParams).Result.ToList();
             }
         }
 
@@ -37,8 +38,9 @@ namespace PestoBot.Database.Repositories
         {
             using (IDbConnection db = new SqliteConnection(LoadConnectionString()))
             {
-                var query = $"Select * from {TableName} where Name = '{name}'";
-                return db.QueryFirstAsync<EventModel>(query).Result;
+                var query = $"Select * from {TableName} where Name = @Name";
+                var dynamicParams = new DynamicParameters(new EventModel() {Name = name});
+                return db.QueryFirstAsync<EventModel>(query, dynamicParams).Result;
             }
 
         }
@@ -47,8 +49,9 @@ namespace PestoBot.Database.Repositories
         {
             using (IDbConnection db = new SqliteConnection(LoadConnectionString()))
             {
-                var query = $"Delete from Event where name = '{name}' and {GuildIdFk} = {guildId}";
-                var result = await db.ExecuteAsync(query);
+                var query = $"Delete from Event where name = @Name and {GuildIdFk} = @GuildId";
+                var dynamicParams = new DynamicParameters(new EventModel() { Name = name, GuildId = guildId });
+                var result = await db.ExecuteAsync(query, dynamicParams);
                 return result;
             }
         }

@@ -12,6 +12,7 @@ using Dapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PestoBot.Database.Models.Common;
+using Serilog;
 
 namespace PestoBot.Database.Repositories.Common
 {
@@ -19,7 +20,7 @@ namespace PestoBot.Database.Repositories.Common
     {
         private static IConfiguration _config;
         protected string TableName; //assigned in base classes
-        protected Boolean AutoIncrementId; //Some models do not have auto-incrementing so we want to capture that
+        protected bool AutoIncrementId; //Some models do not have auto-incrementing so we want to capture that
         protected readonly string GuildIdFk = "GuildId";
         
 
@@ -43,8 +44,6 @@ namespace PestoBot.Database.Repositories.Common
         /// <returns></returns>
         protected static string LoadConnectionString(string id = "PestoDb")
         {
-            //EscapedPesto = _config.GetSection("Emotes").GetSection("EscapedPesto").Value;
-            //return _config.GetSection("ConnectionStrings").GetSection("PestoDb").Value;
             return _config.GetConnectionString("PestoDb");
         }
 
@@ -87,8 +86,8 @@ namespace PestoBot.Database.Repositories.Common
         {
             using (IDbConnection db = new SqliteConnection(LoadConnectionString()))
             {
-                var query = $"Select * from {TableName} limit {numRows}";
-                return (await db.QueryAsync<T>(query)).ToList();
+                var query = $"Select * from {TableName} limit @NumRows";
+                return (await db.QueryAsync<T>(query, new { NumRows = numRows })).ToList();
             }
         }
 
@@ -109,7 +108,7 @@ namespace PestoBot.Database.Repositories.Common
             using (IDbConnection db = new SqliteConnection(LoadConnectionString()))
             {
                 var query = GenerateUpdateQuery();
-                await db.ExecuteAsync(query, t);
+                await db.ExecuteAsync(query, new DynamicParameters(t));
             }
         }
 

@@ -24,7 +24,9 @@ namespace PestoBot.Modules
             {
                 Created = DateTime.Now,
                 GuildId = Context.Guild.Id,
-                Name = evntName
+                Name = evntName,
+                CreatorUsername = Context.Message.Author.Username,
+                CreatorId = Context.Message.Author.Id
             };
             try
             {
@@ -78,8 +80,65 @@ namespace PestoBot.Modules
             var evnt = await repo.GetEventByName(eventName, Context.Guild.Id);
             evnt.ScheduleUrl = url;
 
-            await repo.UpdateAsync(evnt);
+            await UpdateEventWithReply(repo, evnt);
         }
+
+        //Add Submissions link to event
+        [Command("AddSubmissionsLinkToEvent")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Alias("AddSubmissions", "AddSignup")]
+        [Summary("Adds a signup link for submissions to an Event")]
+        public async Task AddSubmissionsUrl(string eventName, string url)
+        {
+            var repo = new EventRepository();
+            var evnt = await repo.GetEventByName(eventName, Context.Guild.Id);
+            evnt.ApplicationUrl = url;
+
+            await UpdateEventWithReply(repo, evnt);
+        }
+
+        //Add Charity to Event 
+        [Command("AddCharityToEvent")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Alias("AddCharity")]
+        [Summary("Adds a charity to an event")]
+        public async Task AddCharityName(string eventName, string charityName)
+        {
+            var repo = new EventRepository();
+            var evnt = await repo.GetEventByName(eventName, Context.Guild.Id);
+            evnt.Charity = charityName;
+
+            await UpdateEventWithReply(repo, evnt);
+        }
+
+        //Add CharityUrl to Event 
+        [Command("AddCharityLinkToEvent")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Alias("AddCharityUrl", "AddCharityLink")]
+        [Summary("Adds a link for a charity to an event")]
+        public async Task AddCharityUrl(string eventName, string url)
+        {
+            var repo = new EventRepository();
+            var evnt = await repo.GetEventByName(eventName, Context.Guild.Id);
+            evnt.CharityUrl = url;
+
+            await UpdateEventWithReply(repo, evnt);
+        }
+
+        //Updates event table and sends reply back to channel
+        private async Task UpdateEventWithReply(EventRepository repo, EventModel evnt)
+        {
+            try
+            {
+                await repo.UpdateAsync(evnt);
+                await ReplyAsync($"Event {evnt.Name} updated successfully!");
+            }
+            catch
+            {
+                await ReplyAsync($"Event {evnt.Name} could not be updated");
+            }
+        }
+
 
         //Delete an event
         [RequireUserPermission(GuildPermission.Administrator)]
