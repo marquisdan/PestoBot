@@ -4,12 +4,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using PestoBot.Common;
 using PestoBot.Database.Models.SpeedrunEvent;
 using PestoBot.Database.Repositories;
 
 namespace PestoBot.Modules
 {
-    public class EventModule : ModuleBase
+    public class EventAdminModule : ModuleBase
     {
         //Create Event
         [Command("CreateEvent")]
@@ -29,11 +30,13 @@ namespace PestoBot.Modules
             try
             {
                 await new EventRepository().SaveNewEvent(evnt);
-                await ReplyAsync($"Event {evntName} created successfully!");
+                var msg = $"Event {evntName} created successfully!";
+                await ReplyAsync(TextUtils.GetSuccessText(msg));
             }
             catch (Exception e)
             {
-                await ReplyAsync($"Event not saved!: {e.Message}");
+                var msg = $"Event not saved!: {e.Message}";
+                await ReplyAsync(TextUtils.GetErrorText(msg));
             }
 
         }
@@ -46,7 +49,8 @@ namespace PestoBot.Modules
             var results = new EventRepository().GetAllEventsByGuild(Context.Guild.Id).Result;
             if (results == null || results.Count == 0)
             {
-                await ReplyAsync("No events created yet!");
+                var msg = "No events created yet!";
+                await ReplyAsync(TextUtils.GetWarnText(msg));
             }
             else
             {
@@ -64,7 +68,8 @@ namespace PestoBot.Modules
             var results = new EventRepository().GetAllEventsByCreatorId(author.Id).Result;
             if (results == null || results.Count == 0)
             {
-                await ReplyAsync("You have not created any events yet!");
+                var msg = "You have not created any events yet!";
+                await ReplyAsync(TextUtils.GetWarnText(msg));
             }
             else
             {
@@ -73,9 +78,9 @@ namespace PestoBot.Modules
         }
 
         //Add Schedule Link to Event
-        [Command("AddScheduleToEvent")]
+        [Command("SetSchedule")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        [Alias("AddHoraro", "AddSchedule", "SetSchedule")]
+        [Alias("AddHoraro", "AddSchedule", "SetScheduleUrl","SetScheduleLink", "AddScheduleToEvent")]
         [Summary("Adds Schedule url to Event")]
         public async Task AddScheduleUrl(string eventName, string url)
         {
@@ -87,9 +92,9 @@ namespace PestoBot.Modules
         }
 
         //Add Submissions link to event
-        [Command("AddSubmissionsLinkToEvent")]
+        [Command("SetSubmissionsUrl")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        [Alias("AddSubmissions", "AddSignup")]
+        [Alias("AddSubmissions", "AddSignup", "AddSubmissionsLinkToEvent","SetEventSubmissionsLink","SetEventSignup","SetSubLink","SetAppLink")]
         [Summary("Adds a signup link for submissions to an Event")]
         public async Task AddSubmissionsUrl(string eventName, string url)
         {
@@ -101,9 +106,9 @@ namespace PestoBot.Modules
         }
 
         //Add Charity to Event 
-        [Command("AddCharityToEvent")]
+        [Command("SetCharity")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        [Alias("AddCharity")]
+        [Alias("AddCharity", "AddCharityToEvent","SetEventCharity")]
         [Summary("Adds a charity to an event")]
         public async Task AddCharityName(string eventName, string charityName)
         {
@@ -115,9 +120,9 @@ namespace PestoBot.Modules
         }
 
         //Add CharityUrl to Event 
-        [Command("AddCharityLinkToEvent")]
+        [Command("SetCharityUrl")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        [Alias("AddCharityUrl", "AddCharityLink")]
+        [Alias("AddCharityUrl", "AddCharityLink", "AddCharityLinkToEvent", "SetCharityLink")]
         [Summary("Adds a link for a charity to an event")]
         public async Task AddCharityUrl(string eventName, string url)
         {
@@ -131,7 +136,7 @@ namespace PestoBot.Modules
         //Set Start Date
         [Command("SetStartDate")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        [Alias("SetEventStartDate, SetStart")]
+        [Alias("SetEventStartDate", "SetStart")]
         [Summary("Adds a start date to an event")]
         public async Task AddStartDate(string eventName, string startDate)
         {
@@ -143,15 +148,16 @@ namespace PestoBot.Modules
                 await UpdateEventWithReply(repo, evnt);
             }
             else
-            { 
-                await ReplyAsync($"Did not recognize {startDate} as a date!");
+            {
+                var msg = $"Did not recognize {startDate} as a date!";
+                await ReplyAsync(TextUtils.GetErrorText(msg));
             }
         }
 
         //Set End Date
         [Command("SetEndDate")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        [Alias("SetEventEndDate, SetEnd")]
+        [Alias("SetEventEndDate", "SetEnd")]
         [Summary("Adds an end date to an event")]
         public async Task AddEndDate(string eventName, string endDate)
         {
@@ -164,7 +170,8 @@ namespace PestoBot.Modules
             }
             else
             {
-                await ReplyAsync($"Did not recognize {endDate} as a date!");
+                var msg = $"Did not recognize {endDate} as a date!";
+                await ReplyAsync(TextUtils.GetErrorText(msg));
             }
         }
 
@@ -185,7 +192,8 @@ namespace PestoBot.Modules
             }
             else
             {
-                await ReplyAsync($"There was an error understanding one of the dates!");
+                var msg = "There was an error understanding one of the dates!";
+                await ReplyAsync(TextUtils.GetErrorText(msg));
             }
         }
         //Set Application due date
@@ -214,11 +222,13 @@ namespace PestoBot.Modules
             try
             {
                 await repo.UpdateAsync(evnt);
-                await ReplyAsync($"Event {evnt.Name} updated successfully!");
+                var msg = $"Event [{evnt.Name}] successfully updated!";
+                await ReplyAsync(TextUtils.GetSuccessText(msg));
             }
             catch
             {
-                await ReplyAsync($"Event {evnt.Name} could not be updated");
+                var msg = $"Event [{evnt.Name}] could not be updated";
+                await ReplyAsync(TextUtils.GetErrorText(msg));
             }
         }
 
@@ -229,21 +239,22 @@ namespace PestoBot.Modules
             {
                 Color = Color.Green,
                 Title = embedTitle,
+                Description = $"For detailed information on a specific event use **[EventInfo \"*Event Name*\"]**"
             };
 
             foreach (var result in results)
             {
                 var sb = new StringBuilder();
-                sb.Append($"\\||Start: " + (result.StartDate == DateTime.MinValue ? "Not set yet!" : result.StartDate.ToShortDateString()));
-                sb.Append($"\\|| End: " + (result.EndDate == DateTime.MinValue ? "Not set yet!" : result.EndDate.ToShortDateString()));
+                sb.Append($"**Start:** " + (result.StartDate == DateTime.MinValue ? "Not set yet!" : result.StartDate.ToShortDateString()));
+                sb.Append($" **End:** " + (result.EndDate == DateTime.MinValue ? "Not set yet!" : result.EndDate.ToShortDateString()));
                 if (!string.IsNullOrEmpty(result.ApplicationUrl))
                 {
-                    sb.AppendLine($"\\||[Applications]({result.ApplicationUrl}) Deadline: ");
+                    sb.Append($"\r\n**Applications:** [Link]({result.ApplicationUrl}) **Deadline:** ");
                     sb.Append(result.ScheduleCloseDate == DateTime.MinValue ? "Not set yet!" : result.ScheduleCloseDate.ToShortDateString());
                 }
                 if (!string.IsNullOrEmpty(result.ScheduleUrl))
                 {
-                    sb.AppendLine($"\\||[Schedule]({result.ScheduleUrl})");
+                    sb.AppendLine($"\r\n**Schedule:** [Link]({result.ScheduleUrl})");
 
                 }
                 eb.AddField(result.Name, sb.ToString());
