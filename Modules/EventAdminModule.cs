@@ -85,7 +85,7 @@ namespace PestoBot.Modules
         public async Task AddScheduleUrl(string eventName, string url)
         {
             var repo = new EventRepository();
-            var evnt = await repo.GetEventByName(eventName, Context.Guild.Id);
+            var evnt = await repo.GetGuildEventByName(eventName, Context.Guild.Id);
             evnt.ScheduleUrl = url;
 
             await UpdateEventWithReply(repo, evnt);
@@ -99,7 +99,7 @@ namespace PestoBot.Modules
         public async Task AddSubmissionsUrl(string eventName, string url)
         {
             var repo = new EventRepository();
-            var evnt = await repo.GetEventByName(eventName, Context.Guild.Id);
+            var evnt = await repo.GetGuildEventByName(eventName, Context.Guild.Id);
             evnt.ApplicationUrl = url;
 
             await UpdateEventWithReply(repo, evnt);
@@ -113,7 +113,7 @@ namespace PestoBot.Modules
         public async Task AddCharityName(string eventName, string charityName)
         {
             var repo = new EventRepository();
-            var evnt = await repo.GetEventByName(eventName, Context.Guild.Id);
+            var evnt = await repo.GetGuildEventByName(eventName, Context.Guild.Id);
             evnt.Charity = charityName;
 
             await UpdateEventWithReply(repo, evnt);
@@ -127,7 +127,7 @@ namespace PestoBot.Modules
         public async Task AddCharityUrl(string eventName, string url)
         {
             var repo = new EventRepository();
-            var evnt = await repo.GetEventByName(eventName, Context.Guild.Id);
+            var evnt = await repo.GetGuildEventByName(eventName, Context.Guild.Id);
             evnt.CharityUrl = url;
 
             await UpdateEventWithReply(repo, evnt);
@@ -141,7 +141,7 @@ namespace PestoBot.Modules
         public async Task AddStartDate(string eventName, string startDate)
         {
             var repo = new EventRepository();
-            var evnt = await repo.GetEventByName(eventName, Context.Guild.Id);
+            var evnt = await repo.GetGuildEventByName(eventName, Context.Guild.Id);
             if (DateTime.TryParse(startDate, out var parsedStartDate))
             {
                 evnt.StartDate = parsedStartDate;
@@ -162,7 +162,7 @@ namespace PestoBot.Modules
         public async Task AddEndDate(string eventName, string endDate)
         {
             var repo = new EventRepository();
-            var evnt = await repo.GetEventByName(eventName, Context.Guild.Id);
+            var evnt = await repo.GetGuildEventByName(eventName, Context.Guild.Id);
             if (DateTime.TryParse(endDate, out var parsedEndDate))
             {
                 evnt.EndDate = parsedEndDate;
@@ -183,7 +183,7 @@ namespace PestoBot.Modules
         public async Task AddStartEndDates(string eventName, string startDate, string endDate)
         {
             var repo = new EventRepository();
-            var evnt = await repo.GetEventByName(eventName, Context.Guild.Id);
+            var evnt = await repo.GetGuildEventByName(eventName, Context.Guild.Id);
             if (DateTime.TryParse(startDate, out var parsedStartDate) && DateTime.TryParse(endDate, out var parsedEndDate))
             {
                 evnt.StartDate = parsedStartDate;
@@ -199,12 +199,12 @@ namespace PestoBot.Modules
         //Set Application due date
         [Command("SetSubmissionDueDate")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        [Alias("SetSubmissionDeadline, SetApplicationDeadline,SetApplicationDueDate")]
+        [Alias("SetSubmissionDeadline", "SetApplicationDeadline","SetApplicationDueDate")]
         [Summary("Adds an end date to an event")]
         public async Task AddSubmissionDeadline(string eventName, string deadlineDate)
         {
             var repo = new EventRepository();
-            var evnt = await repo.GetEventByName(eventName, Context.Guild.Id);
+            var evnt = await repo.GetGuildEventByName(eventName, Context.Guild.Id);
             if (DateTime.TryParse(deadlineDate, out var parsedDeadline))
             {
                 evnt.ScheduleCloseDate = parsedDeadline;
