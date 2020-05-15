@@ -34,6 +34,16 @@ namespace PestoBot.Database.Repositories
             }
         }
 
+        public virtual async Task<List<EventModel>> GetAllEventsByCreatorId(ulong userId)
+        {
+            using (IDbConnection db = new SqliteConnection(LoadConnectionString()))
+            {
+                var query = $"Select * from {TableName} where CreatorId = @CreatorId";
+                var dynamicParams = new DynamicParameters(new EventModel {CreatorId = userId});
+                return db.QueryAsync<EventModel>(query, dynamicParams).Result.ToList();
+            }
+        }
+
         public virtual async Task<EventModel> GetEventByName(string name, ulong guildId)
         {
             using (IDbConnection db = new SqliteConnection(LoadConnectionString()))
