@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 using System.Threading.Tasks;
 using Discord;
@@ -133,6 +134,20 @@ namespace PestoBot.Modules
             await UpdateEventWithReply(repo, evnt);
         }
 
+        //Set Doation Link
+        [Command("SetDonationLink")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        [Alias("SetDonos")]
+        [Summary("Adds a donation link to event")]
+        public async Task AddDonationUrl(string eventName, string url)
+        {
+            var repo = new EventRepository();
+            var evnt = await repo.GetGuildEventByName(eventName, Context.Guild.Id);
+            evnt.DonationUrl = url;
+
+            await UpdateEventWithReply(repo, evnt);
+        }
+
         //Set Start Date
         [Command("SetStartDate")]
         [RequireUserPermission(GuildPermission.Administrator)]
@@ -197,9 +212,9 @@ namespace PestoBot.Modules
             }
         }
         //Set Application due date
-        [Command("SetSubmissionDueDate")]
+        [Command("SetSubmissionsDueDate")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        [Alias("SetSubmissionDeadline", "SetApplicationDeadline","SetApplicationDueDate")]
+        [Alias("SetSubmissionDeadline", "SetApplicationDeadline","SetApplicationDueDate", "SetSubmissionsDueDate")]
         [Summary("Adds an end date to an event")]
         public async Task AddSubmissionDeadline(string eventName, string deadlineDate)
         {

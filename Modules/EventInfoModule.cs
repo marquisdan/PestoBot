@@ -38,10 +38,44 @@ namespace PestoBot.Modules
                 Color = Color.Green,
                 Description = $"An event by {guild.Name}"
             };
+            eb.AddField("Starts", evnt.StartDate == DateTime.MinValue ? "Not Set" : evnt.StartDate.ToShortDateString(), true);
+            eb.AddField("Ends", evnt.StartDate == DateTime.MinValue ? "Not Set" : evnt.EndDate.ToShortDateString(),true);
+            eb.AddField("Schedule", string.IsNullOrEmpty(evnt.ScheduleUrl) ? "Not Yet Available" : $"[View Here]({evnt.ScheduleUrl})", true);
+           
+            if (!string.IsNullOrEmpty(evnt.ApplicationUrl))
+            {
+                eb.AddField("Application",$"[Apply Here]({evnt.ApplicationUrl})", true);
+                if (ShouldShowScheduleDueDate(evnt))
+                {
+                    eb.AddField("Deadline", evnt.ScheduleCloseDate.ToShortDateString(), true);
+                }
+            }
 
-            eb.Fields.Add(new EmbedFieldBuilder() {Name = "something", Value = "something else"});
+
+            if (!string.IsNullOrEmpty(evnt.Charity))
+            {
+                var fieldText = new StringBuilder();
+                fieldText.Append($"{evnt.Charity} ");
+                if (!string.IsNullOrEmpty(evnt.CharityUrl))
+                {
+                    fieldText.Append($"[Website]({evnt.CharityUrl}) ");
+                }
+
+                if (!string.IsNullOrEmpty(evnt.DonationUrl))
+                {
+                    fieldText.Append($"[Donate]({evnt.CharityUrl})");
+                }
+
+                eb.AddField("Charity", fieldText.ToString());
+            }
 
             return eb;
+        }
+
+        private bool ShouldShowScheduleDueDate(EventModel evnt)
+        {
+            return evnt.ScheduleCloseDate != DateTime.MinValue &&
+                   evnt.ScheduleCloseDate > DateTime.Now;
         }
     }
 }
