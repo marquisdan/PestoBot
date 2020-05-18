@@ -76,6 +76,13 @@ namespace PestoBot.Services
             // We don't want the bot to respond to itself or other bots.
             if (IsSelfOrBot(msg)) return;
 
+            //Don't process DMs
+            if (IsDM(msg))
+            {
+                await HandleDms(msg);
+                return;
+            }
+
             if (MsgHasPestoContent(msg.Content))
             {
                 await HandlePesto(msg);
@@ -86,6 +93,20 @@ namespace PestoBot.Services
 
             //Trigger on prefix OR @mentioning bot
             await PrefixTriggers(msg, pos);
+        }
+
+        protected internal virtual bool IsDM(SocketMessage messageParam)
+        {
+            return messageParam.Channel is IDMChannel;
+        }
+
+        private async Task HandleDms(SocketUserMessage msg)
+        {
+            var context = new SocketCommandContext(_client, msg);
+            Log.Information($"DM Received: {context.User.Username}: {context.Message.Content}");
+            await context.Channel.SendMessageAsync(
+                $"Sorry, {context.User.Username}, {_client.CurrentUser.Username} is not set up for DMs yet");
+            await context.Channel.SendMessageAsync($"Contact marquisdan if you have any questions");
         }
 
         protected internal virtual bool IsSelfOrBot(SocketUserMessage msg)

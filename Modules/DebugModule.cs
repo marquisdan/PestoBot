@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Discord;
 using Discord.Commands;
 using PestoBot.Database.Models.DebugModel;
 using PestoBot.Database.Repositories.DebugRepo;
@@ -93,6 +94,14 @@ namespace PestoBot.Modules
         {
             var repo = new DebugRepository();
             await repo.DeleteAllDatabaseData();
+        }
+
+        [RequireOwner]
+        [Command("SendPM")]
+        [Summary("Sends a private message to a user")]
+        public async Task SendPMToUser(ulong userId, string msg)
+        {
+            await Context.Client.GetUserAsync(userId).Result.SendMessageAsync(msg);
         }
     }
 }
