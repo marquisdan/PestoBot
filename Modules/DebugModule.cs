@@ -101,7 +101,11 @@ namespace PestoBot.Modules
         [Summary("Sends a private message to a user")]
         public async Task SendPMToUser(ulong userId, string msg)
         {
-            await Context.Client.GetUserAsync(userId).Result.SendMessageAsync(msg);
+            Log.Information("SendPM Command received.");
+            var usr = Context.Client.GetUserAsync(userId).Result;
+            Log.Information($"{usr.Username} found");
+            await usr.SendMessageAsync(msg);
+            Log.Information("PM Sent");
         }
     }
 }
