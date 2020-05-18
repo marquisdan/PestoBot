@@ -58,12 +58,12 @@ namespace PestoBot.Modules
                 fieldText.Append($"{evnt.Charity} ");
                 if (!string.IsNullOrEmpty(evnt.CharityUrl))
                 {
-                    fieldText.Append($"[Website]({evnt.CharityUrl}) ");
+                    fieldText.Append($"| [Website]({evnt.CharityUrl}) ");
                 }
 
                 if (!string.IsNullOrEmpty(evnt.DonationUrl))
                 {
-                    fieldText.Append($"[Donate]({evnt.CharityUrl})");
+                    fieldText.Append($"| [Donate]({evnt.CharityUrl}) |");
                 }
 
                 eb.AddField("Charity", fieldText.ToString());
