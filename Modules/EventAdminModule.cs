@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using PestoBot.Common;
+using PestoBot.Common.CustomPreconditions;
 using PestoBot.Database.Models.SpeedrunEvent;
 using PestoBot.Database.Repositories;
 
@@ -15,7 +17,7 @@ namespace PestoBot.Modules
     {
         //Create Event
         [Command("CreateEvent")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.Administrator, Group = "Perms"), RequireRole("PestoAdmin", Group = "Perms"), RequireOwner(Group = "Perms")]
         [Alias("AddEvent")]
         [Summary("Creates a new event")]
         public async Task CreateEvent(string evntName)
@@ -80,7 +82,7 @@ namespace PestoBot.Modules
 
         //Add Schedule Link to Event
         [Command("SetSchedule")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.Administrator, Group = "Perms"), RequireRole("PestoAdmin", Group = "Perms"), RequireOwner(Group = "Perms")]
         [Alias("AddHoraro", "AddSchedule", "SetScheduleUrl","SetScheduleLink", "AddScheduleToEvent")]
         [Summary("Adds Schedule url to Event")]
         public async Task AddScheduleUrl(string eventName, string url)
@@ -94,7 +96,7 @@ namespace PestoBot.Modules
 
         //Add Submissions link to event
         [Command("SetSubmissionsUrl")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.Administrator, Group = "Perms"), RequireRole("PestoAdmin", Group = "Perms"), RequireOwner(Group = "Perms")]
         [Alias("AddSubmissions", "AddSignup", "AddSubmissionsLinkToEvent","SetEventSubmissionsLink","SetEventSignup","SetSubLink","SetAppLink")]
         [Summary("Adds a signup link for submissions to an Event")]
         public async Task AddSubmissionsUrl(string eventName, string url)
@@ -108,7 +110,7 @@ namespace PestoBot.Modules
 
         //Add Charity to Event 
         [Command("SetCharity")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.Administrator, Group = "Perms"), RequireRole("PestoAdmin", Group = "Perms"), RequireOwner(Group = "Perms")]
         [Alias("AddCharity", "AddCharityToEvent","SetEventCharity")]
         [Summary("Adds a charity to an event")]
         public async Task AddCharityName(string eventName, string charityName)
@@ -122,7 +124,7 @@ namespace PestoBot.Modules
 
         //Add CharityUrl to Event 
         [Command("SetCharityUrl")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.Administrator, Group = "Perms"), RequireRole("PestoAdmin", Group = "Perms"), RequireOwner(Group = "Perms")]
         [Alias("AddCharityUrl", "AddCharityLink", "AddCharityLinkToEvent", "SetCharityLink")]
         [Summary("Adds a link for a charity to an event")]
         public async Task AddCharityUrl(string eventName, string url)
@@ -136,7 +138,7 @@ namespace PestoBot.Modules
 
         //Set Doation Link
         [Command("SetDonationLink")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.Administrator, Group = "Perms"), RequireRole("PestoAdmin", Group = "Perms"), RequireOwner(Group = "Perms")]
         [Alias("SetDonos")]
         [Summary("Adds a donation link to event")]
         public async Task AddDonationUrl(string eventName, string url)
@@ -150,7 +152,7 @@ namespace PestoBot.Modules
 
         //Set Start Date
         [Command("SetStartDate")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.Administrator, Group = "Perms"), RequireRole("PestoAdmin", Group = "Perms"), RequireOwner(Group = "Perms")]
         [Alias("SetEventStartDate", "SetStart")]
         [Summary("Adds a start date to an event")]
         public async Task AddStartDate(string eventName, string startDate)
@@ -171,7 +173,7 @@ namespace PestoBot.Modules
 
         //Set End Date
         [Command("SetEndDate")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.Administrator, Group = "Perms"), RequireRole("PestoAdmin", Group = "Perms"), RequireOwner(Group = "Perms")]
         [Alias("SetEventEndDate", "SetEnd")]
         [Summary("Adds an end date to an event")]
         public async Task AddEndDate(string eventName, string endDate)
@@ -192,7 +194,7 @@ namespace PestoBot.Modules
 
         //Set Start and End Dates
         [Command("SetStartEndDates")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.Administrator, Group = "Perms"), RequireRole("PestoAdmin", Group = "Perms"), RequireOwner(Group = "Perms")]
         [Alias("SetDates", "SetEventDates")]
         [Summary("Adds start and end dates to event")]
         public async Task AddStartEndDates(string eventName, string startDate, string endDate)
@@ -213,7 +215,7 @@ namespace PestoBot.Modules
         }
         //Set Application due date
         [Command("SetSubmissionsDueDate")]
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.Administrator, Group = "Perms"), RequireRole("PestoAdmin", Group = "Perms"), RequireOwner(Group = "Perms")]
         [Alias("SetSubmissionDeadline", "SetApplicationDeadline","SetApplicationDueDate", "SetSubmissionsDueDate")]
         [Summary("Adds an end date to an event")]
         public async Task AddSubmissionDeadline(string eventName, string deadlineDate)
@@ -280,7 +282,7 @@ namespace PestoBot.Modules
 
 
         //Delete an event
-        [RequireUserPermission(GuildPermission.Administrator)]
+        [RequireUserPermission(GuildPermission.Administrator, Group = "Perms"), RequireRole("PestoAdmin", Group = "Perms"), RequireOwner(Group = "Perms")]
         [Command("DeleteEvent")]
         [Alias("RemoveEvent")]
         [Summary("Removes Event")]
