@@ -1,5 +1,5 @@
 --
--- File generated with SQLiteStudio v3.2.1 on Tue May 12 16:41:30 2020
+-- File generated with SQLiteStudio v3.2.1 on Wed May 20 16:28:06 2020
 --
 -- Text encoding used: System
 --
@@ -101,7 +101,8 @@ CREATE TABLE MarathonProject (
     Description      STRING,
     DueDate          DATETIME,
     ReminderText     STRING,
-    LastReminderSent DATETIME
+    LastReminderSent DATETIME,
+    ReminderInterval INTEGER
 );
 
 
