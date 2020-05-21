@@ -17,10 +17,17 @@ namespace PestoBot.Common.CustomPreconditions
         {
             if (ContextUserIsGuildUser(context))
             {
-                //Check perms or bot owner.
+                var gUser = context.User as SocketGuildUser;
+                var roles = (from r in gUser.Roles select r.Name);
+                // If this command was executed by a user with the appropriate role, OR is bot owner return a success
+                if (roles.Intersect(GetAdminRoles(services)).Any() || 
+                    new RequireOwnerAttribute().CheckPermissionsAsync(context, command, services).Result.IsSuccess)
+                    return Task.FromResult(PreconditionResult.FromSuccess());
+                // Since it wasn't, fail
+                return Task.FromResult(PreconditionResult.FromError("You do not have permission to run this command."));
             }
 
-            return Task.FromResult(PreconditionResult.FromError("You do not have permission to run this command"));
+            return Task.FromResult(PreconditionResult.FromError("You do not have permission to run this command."));
         }
 
         protected internal virtual bool ContextUserIsGuildUser(ICommandContext context)
