@@ -12,6 +12,7 @@ using Dapper;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PestoBot.Database.Models.Common;
+using PestoBot.Services;
 using Serilog;
 
 namespace PestoBot.Database.Repositories.Common

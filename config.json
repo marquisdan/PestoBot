@@ -10,5 +10,6 @@
     "MWSF": 140652251206254592,
     "BotSandbox": 699621364654407700
   },
+  "BotAdminRoles": ["PestoAdmin","BotAdmin"],
   "DefaultPrefix": "%"
 }

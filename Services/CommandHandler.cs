@@ -14,7 +14,7 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace PestoBot.Services
 {
-    class CommandHandler
+    public class CommandHandler
     {
         private IConfiguration _config;
         private DiscordSocketClient _client;
@@ -36,15 +36,14 @@ namespace PestoBot.Services
             InitFields();
         }
 
-        private void InitFields()
-        {//_config.GetSection("SpecialGuilds").GetSection("MWSF").Value
+        protected internal virtual void InitFields()
+        {
             CommandPrefix = _config["DefaultPrefix"];
             EscapedPesto = _config.GetSection("Emotes").GetSection("EscapedPesto").Value;
             EscapedDabesto = _config.GetSection("Emotes").GetSection("EscapedDabesto").Value;
             MWSF = ulong.Parse(_config.GetSection("SpecialGuilds").GetSection("MWSF").Value);
             BotSandbox = ulong.Parse(_config.GetSection("SpecialGuilds").GetSection("BotSandbox").Value);
         }
-
 
         protected internal virtual void InitServices(IServiceProvider services)
         {
