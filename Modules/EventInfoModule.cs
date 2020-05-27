@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using PestoBot.Common;
 using PestoBot.Database.Models.Guild;
 using PestoBot.Database.Models.SpeedrunEvent;
 using PestoBot.Database.Repositories;
@@ -25,7 +26,15 @@ namespace PestoBot.Modules
             var guildId = Context.Guild.Id;
             var evnt = evntName == DefaultEvntName ? EventRepo.GetNextEventForGuild(guildId).Result : EventRepo.GetEventByName(evntName).Result;
 
-            await ReplyAsync(null, false, GetEventInfoEmbed(evnt).Build());
+            if (evnt == null)
+            {
+                var msg = evntName == DefaultEvntName ? "No events created yet!" : "That event does not exist!";
+                await ReplyAsync(TextUtils.GetWarnText(msg));
+            }
+            else
+            {
+                await ReplyAsync(null, false, GetEventInfoEmbed(evnt).Build());
+            }
         }
 
         //Construct EmbedBuilder for an event
@@ -40,8 +49,11 @@ namespace PestoBot.Modules
             };
             eb.AddField("Starts", evnt.StartDate == DateTime.MinValue ? "Not Set" : evnt.StartDate.ToShortDateString(), true);
             eb.AddField("Ends", evnt.StartDate == DateTime.MinValue ? "Not Set" : evnt.EndDate.ToShortDateString(),true);
-            eb.AddField("Schedule", string.IsNullOrEmpty(evnt.ScheduleUrl) ? "Not Yet Available" : $"[View Here]({evnt.ScheduleUrl})", true);
-           
+            if (!string.IsNullOrEmpty(evnt.ScheduleUrl))
+            {
+                eb.AddField("Schedule", string.IsNullOrEmpty(evnt.ScheduleUrl) ? "Not Yet Available" : $"[View Here]({evnt.ScheduleUrl})", true);
+            }
+            
             if (!string.IsNullOrEmpty(evnt.ApplicationUrl))
             {
                 eb.AddField("Application",$"[Apply Here]({evnt.ApplicationUrl})", true);
