@@ -1,9 +1,12 @@
-﻿using System.Text;
+﻿using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace PestoBot.Common
 {
     public static class TextUtils
     {
+        public static string EmbedDateFormat { get; } = "MMMM dd, yyyy";
+
         public static string GetSuccessText(string msg)
         {
             var sb = new StringBuilder();
@@ -30,5 +33,6 @@ namespace PestoBot.Common
             sb.AppendLine("```");
             return sb.ToString();
         }
+
     }
 }

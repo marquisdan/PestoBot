@@ -78,7 +78,7 @@ namespace PestoBot.Database.Repositories
             return await GetNullableNextEvent(query, dynamicParams);
         }
 
-        private static async Task<EventModel> GetNullableNextEvent(string query, DynamicParameters dynamicParams)
+        private static async Task<EventModel>? GetNullableNextEvent(string query, DynamicParameters dynamicParams)
         {
             using (IDbConnection db = new SqliteConnection(LoadConnectionString()))
             {
@@ -93,9 +93,8 @@ namespace PestoBot.Database.Repositories
                 }
             }
         }
+        #nullable disable
 
-
-#nullable disable
         public virtual async Task<int> RemoveEvent(string name, ulong guildId)
         {
             using (IDbConnection db = new SqliteConnection(LoadConnectionString()))

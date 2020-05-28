@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -14,21 +16,19 @@ namespace PestoBot.Modules
 {
     public class EventInfoModule : ModuleBase
     {
-        private const string DefaultEvntName = "";
-
         //Display information about a spedrunning event
         [Command("EventInfo")]
         [Alias("AboutEvent","GetEventInfo")]
         [Summary("Gets information about a speedrunning event")]
-        public async Task GetEventInfo(string evntName = DefaultEvntName)
+        public async Task GetEventInfo(string evntName = "")
         {
             var EventRepo = new EventRepository();
             var guildId = Context.Guild.Id;
-            var evnt = evntName == DefaultEvntName ? EventRepo.GetNextEventForGuild(guildId).Result : EventRepo.GetEventByName(evntName).Result;
+            var evnt = evntName == string.Empty ? EventRepo.GetNextEventForGuild(guildId).Result : EventRepo.GetEventByName(evntName).Result;
 
             if (evnt == null)
             {
-                var msg = evntName == DefaultEvntName ? "No events created yet!" : "That event does not exist!";
+                var msg = evntName == string.Empty ? "No events created yet!" : "That event does not exist!";
                 await ReplyAsync(TextUtils.GetWarnText(msg));
             }
             else
@@ -45,10 +45,17 @@ namespace PestoBot.Modules
             {
                 Title = $"{evnt.Name}",
                 Color = Color.Green,
-                Description = $"An event by {guild.Name}"
+                Footer = new EmbedFooterBuilder().WithText($"An event by {guild.Name}")
             };
-            eb.AddField("Starts", evnt.StartDate == DateTime.MinValue ? "Not Set" : evnt.StartDate.ToShortDateString(), true);
-            eb.AddField("Ends", evnt.StartDate == DateTime.MinValue ? "Not Set" : evnt.EndDate.ToShortDateString(),true);
+
+            if(!(evnt.StartDate == DateTime.MinValue))
+            {
+                eb.AddField("Starts", evnt.StartDate.ToString(TextUtils.EmbedDateFormat), true);
+            }
+            if (!(evnt.EndDate == DateTime.MinValue))
+            {
+                eb.AddField("Ends", evnt.EndDate.ToString(TextUtils.EmbedDateFormat), true);
+            }
             if (!string.IsNullOrEmpty(evnt.ScheduleUrl))
             {
                 eb.AddField("Schedule", string.IsNullOrEmpty(evnt.ScheduleUrl) ? "Not Yet Available" : $"[View Here]({evnt.ScheduleUrl})", true);
@@ -59,10 +66,9 @@ namespace PestoBot.Modules
                 eb.AddField("Application",$"[Apply Here]({evnt.ApplicationUrl})", true);
                 if (ShouldShowScheduleDueDate(evnt))
                 {
-                    eb.AddField("Deadline", evnt.ScheduleCloseDate.ToShortDateString(), true);
+                    eb.AddField("Deadline", evnt.ScheduleCloseDate.ToString(TextUtils.EmbedDateFormat), true);
                 }
             }
-
 
             if (!string.IsNullOrEmpty(evnt.Charity))
             {
