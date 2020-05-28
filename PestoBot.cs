@@ -54,7 +54,8 @@ namespace PestoBot
         private CommandService InitCommandService() =>
             new CommandService(new CommandServiceConfig
             {
-                CaseSensitiveCommands = false
+                CaseSensitiveCommands = false,
+                DefaultRunMode = RunMode.Async
             });
 
         /// <summary>
