@@ -4,6 +4,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
+using PestoBot.Common;
 using PestoBot.Database.Models.DebugModel;
 using PestoBot.Database.Repositories.DebugRepo;
 using PestoBot.Database.Repositories.Guild;
@@ -106,6 +108,22 @@ namespace PestoBot.Modules
             Log.Information($"{usr.Username} found");
             await usr.SendMessageAsync(msg);
             Log.Information("PM Sent");
+        }
+
+        [RequireOwner]
+        [Command("ServerTime")]
+        [Alias("GetServerTime", "ShowServerTime")]
+        [Summary("Gets server time")]
+        public async Task GetServerTime()
+        {
+            await ReplyAsync(DateTime.Now.ToString("MMMM dd, yyyy HH:mm:ss tt zz"));
+        }
+
+        [Command("Ping")]
+        [Summary("Get bot latency")]
+        public async Task GetPing()
+        {
+            await ReplyAsync("Pong! 🏓 **" + ((DiscordSocketClient) Context.Client).Latency + "ms**");
         }
     }
 }
