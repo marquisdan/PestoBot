@@ -6,6 +6,7 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using PestoBot.Common;
+using PestoBot.Common.CustomPreconditions;
 using PestoBot.Database.Models.DebugModel;
 using PestoBot.Database.Repositories.DebugRepo;
 using PestoBot.Database.Repositories.Guild;
@@ -120,6 +121,7 @@ namespace PestoBot.Modules
         }
 
         [Command("Ping")]
+        [RequireBotAdmin]
         [Summary("Get bot latency")]
         public async Task GetPing()
         {
