@@ -8,6 +8,7 @@ using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using PestoBot.Services;
 
 namespace PestoBot.Common.CustomPreconditions
 {
@@ -68,7 +69,7 @@ namespace PestoBot.Common.CustomPreconditions
 
         protected internal virtual IConfiguration GetConfigService(IServiceProvider services)
         {
-            return services.GetRequiredService<IConfiguration>();
+            return services.GetService<IConfiguration>() ?? ConfigService.BuildConfig();
         }
     }
 }
