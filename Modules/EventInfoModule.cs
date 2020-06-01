@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using PestoBot.Common;
-using PestoBot.Database.Models.Guild;
 using PestoBot.Database.Models.SpeedrunEvent;
 using PestoBot.Database.Repositories;
 using PestoBot.Database.Repositories.Guild;
+using PestoBot.Services;
+
 
 namespace PestoBot.Modules
 {
@@ -40,15 +38,20 @@ namespace PestoBot.Modules
         //Construct EmbedBuilder for an event
         private EmbedBuilder GetEventInfoEmbed(EventModel evnt)
         {
+            var config = ConfigService.BuildConfig();
             var guild = new GuildRepository().GetAsync(evnt.GuildId).Result;
             var eb = new EmbedBuilder()
             {
                 Title = $"{evnt.Name}",
                 Color = Color.Green,
-                Footer = new EmbedFooterBuilder().WithText($"An event by {guild.Name}")
             };
 
-            if(!(evnt.StartDate == DateTime.MinValue))
+            if (evnt.GuildId != ulong.Parse(config.GetSection("SpecialGuilds").GetSection("BotSandbox").Value))
+            {
+                eb.Footer = new EmbedFooterBuilder().WithText($"An event by {guild.Name}");
+            }
+
+            if (!(evnt.StartDate == DateTime.MinValue))
             {
                 eb.AddField("Starts", evnt.StartDate.ToString(TextUtils.EmbedDateFormat), true);
             }
