@@ -106,7 +106,7 @@ namespace PestoBot.Modules
                 sb.Append($" **End:** " + (result.EndDate == DateTime.MinValue ? "Not set yet!" : result.EndDate.ToShortDateString()));
                 if (!string.IsNullOrEmpty(result.ApplicationUrl))
                 {
-                    sb.Append($"\r\n**Applications:** [Link]({result.ApplicationUrl}");
+                    sb.Append($"\r\n [Apply Here]({result.ApplicationUrl})");
                     if (result.ScheduleCloseDate != DateTime.MinValue)
                     {
                         sb.Append($" **Deadline: ** {result.ScheduleCloseDate.ToShortDateString()}");
@@ -114,7 +114,7 @@ namespace PestoBot.Modules
                 }
                 if (!string.IsNullOrEmpty(result.ScheduleUrl))
                 {
-                    sb.AppendLine($"\r\n**Schedule:** [Link]({result.ScheduleUrl})");
+                    sb.AppendLine($"\r\n [View Schedule]({result.ScheduleUrl})");
 
                 }
                 eb.AddField(result.Name, sb.ToString());
