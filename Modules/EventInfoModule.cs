@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Discord;
@@ -33,6 +34,73 @@ namespace PestoBot.Modules
             {
                 await ReplyAsync(null, false, GetEventInfoEmbed(evnt).Build());
             }
+        }
+
+        //View All Events by Guild
+        [Command("ListEvents")]
+        [Summary("List all events created by this discord server")]
+        public async Task ListEventsByGuild()
+        {
+            var results = new EventRepository().GetAllEventsByGuild(Context.Guild.Id).Result;
+            if (results == null || results.Count == 0)
+            {
+                var msg = "No events created yet!";
+                await ReplyAsync(TextUtils.GetWarnText(msg));
+            }
+            else
+            {
+                await ReplyWithEventListEmbed("All Events", results);
+            }
+        }
+
+        //View all commands by user
+        [Command("ListMyEvents")]
+        [Alias("GetAllEventsByCreatorId")]
+        [Summary("Shows all events you have made")]
+        public async Task ListEventsByOwner()
+        {
+            var author = Context.Message.Author;
+            var results = new EventRepository().GetAllEventsByCreatorId(author.Id).Result;
+            if (results == null || results.Count == 0)
+            {
+                var msg = "You have not created any events yet!";
+                await ReplyAsync(TextUtils.GetWarnText(msg));
+            }
+            else
+            {
+                await ReplyWithEventListEmbed($"Events by {author.Username}", results);
+            }
+        }
+
+        //Creates an embed with a list of events and replies with it.
+        private async Task ReplyWithEventListEmbed(string embedTitle, List<EventModel> results)
+        {
+            var eb = new EmbedBuilder()
+            {
+                Color = Color.Green,
+                Title = embedTitle,
+                Description = $"For detailed information on a specific event use **[EventInfo \"*Event Name*\"]**"
+            };
+
+            foreach (var result in results)
+            {
+                var sb = new StringBuilder();
+                sb.Append($"**Start:** " + (result.StartDate == DateTime.MinValue ? "Not set yet!" : result.StartDate.ToShortDateString()));
+                sb.Append($" **End:** " + (result.EndDate == DateTime.MinValue ? "Not set yet!" : result.EndDate.ToShortDateString()));
+                if (!string.IsNullOrEmpty(result.ApplicationUrl))
+                {
+                    sb.Append($"\r\n**Applications:** [Link]({result.ApplicationUrl}) **Deadline:** ");
+                    sb.Append(result.ScheduleCloseDate == DateTime.MinValue ? "Not set yet!" : result.ScheduleCloseDate.ToShortDateString());
+                }
+                if (!string.IsNullOrEmpty(result.ScheduleUrl))
+                {
+                    sb.AppendLine($"\r\n**Schedule:** [Link]({result.ScheduleUrl})");
+
+                }
+                eb.AddField(result.Name, sb.ToString());
+            }
+
+            await ReplyAsync(null, false, eb.Build());
         }
 
         //Construct EmbedBuilder for an event
