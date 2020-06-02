@@ -92,7 +92,7 @@ namespace PestoBot.Database.Repositories
                 try
                 {
                     var data = await db.QueryAsync<EventModel>(query, dynamicParams);
-                    return data.First();
+                    return data.FirstOrDefault();
                 }
                 catch (InvalidOperationException e)
                 {
