@@ -36,8 +36,25 @@ namespace PestoBot.Modules
             }
         }
 
-        //View All Events by Guild
+        //View all open events
         [Command("ListEvents")]
+        [Summary("List all open events")]
+        public async Task ListEvents()
+        {
+            var results = new EventRepository().GetAllOpenEvents().Result;
+            if (results == null || results.Count == 0)
+            {
+                var msg = "No events created yet!";
+                await ReplyAsync(TextUtils.GetWarnText(msg));
+            }
+            else
+            {
+                await ReplyWithEventListEmbed("All Events", results);
+            }
+        }
+
+        //View All Events by Guild
+        [Command("ListServerEvents")]
         [Summary("List all events created by this discord server")]
         public async Task ListEventsByGuild()
         {
@@ -90,6 +107,10 @@ namespace PestoBot.Modules
                 if (!string.IsNullOrEmpty(result.ApplicationUrl))
                 {
                     sb.Append($"\r\n**Applications:** [Link]({result.ApplicationUrl}) **Deadline:** ");
+                    if (result.ScheduleCloseDate != DateTime.MinValue)
+                    {
+                        sb.Append($" **Deadline: ** {result.ScheduleCloseDate.ToShortDateString()}");
+                    }
                     sb.Append(result.ScheduleCloseDate == DateTime.MinValue ? "Not set yet!" : result.ScheduleCloseDate.ToShortDateString());
                 }
                 if (!string.IsNullOrEmpty(result.ScheduleUrl))

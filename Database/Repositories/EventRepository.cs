@@ -33,6 +33,13 @@ namespace PestoBot.Database.Repositories
             return await GetEvents(query, dynamicParams);
         }
 
+        public virtual async Task<List<EventModel>> GetAllOpenEvents()
+        {
+            var query = $"Select * from {TableName} where EndDate > @EndDate";
+            var dynamicParams = new DynamicParameters(new EventModel {EndDate = DateTime.Now});
+            return await GetEvents(query, dynamicParams);
+        }
+
         private static async Task<List<EventModel>> GetEvents(string query, DynamicParameters dynamicParams)
         {
             using (IDbConnection db = new SqliteConnection(LoadConnectionString()))
