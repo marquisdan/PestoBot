@@ -111,7 +111,6 @@ namespace PestoBot.Modules
                     {
                         sb.Append($" **Deadline: ** {result.ScheduleCloseDate.ToShortDateString()}");
                     }
-                    sb.Append(result.ScheduleCloseDate == DateTime.MinValue ? "Not set yet!" : result.ScheduleCloseDate.ToShortDateString());
                 }
                 if (!string.IsNullOrEmpty(result.ScheduleUrl))
                 {
