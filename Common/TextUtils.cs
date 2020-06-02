@@ -1,5 +1,8 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
+using NUnit.Framework;
 
 namespace PestoBot.Common
 {
@@ -33,6 +36,17 @@ namespace PestoBot.Common
             sb.AppendLine("```");
             return sb.ToString();
         }
+
+        public static string GetHighlightedFields(IEnumerable<string> fields)
+        {
+            //return GetHighlightedFields(fields.ToList());
+            return $"`{fields.Aggregate((a, x) => a + "`  `" + x)}`";
+        }
+
+        //public static string GetHighlightedFields(List<string> fields)
+        //{
+        //  return  $"`{fields.Aggregate((a, x) => a + "`  `" + x)}`";
+        //}
 
     }
 }

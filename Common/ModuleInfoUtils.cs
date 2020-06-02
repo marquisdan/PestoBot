@@ -34,11 +34,6 @@ namespace PestoBot.Modules.EmbedBuilders
             return commands.Select(x => x.Text).First();
         }
 
-        public List<MethodInfo> GetFirstPublicMethods(TypeInfo typeInfo, int numMethods)
-        {
-            return GetPublicMethods(typeInfo).Take(numMethods).ToList();
-        }
-
         public List<MethodInfo> GetPublicMethods(TypeInfo typeInfo)
         {
             return typeInfo.AsType().GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).ToList();

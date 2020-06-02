@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using PestoBot.Common;
 using PestoBot.Modules.EmbedBuilders;
 
 namespace PestoBot.Modules
@@ -82,7 +82,7 @@ namespace PestoBot.Modules
             if (topic == "")
                 await ShowTopLevelHelp();
             else
-                await ReplyAsync("Specific command info coming soon");
+                await ShowCommandHelp(topic);
         }
 
         private async Task ShowTopLevelHelp()
@@ -90,21 +90,33 @@ namespace PestoBot.Modules
             var modules = moduleInfoUtils.GetAllModules();
             var eb = new EmbedBuilder()
             {
-                Title = "A brief summary of commands for PestoBot",
-                Description = "To find commands for a specific module use **Help \"ModuleName\"**"
+                Title = "PestoBot Help",
+                Description = "Here's a brief preview of my commands. To find more information about a specific command you can use **Help \"CommandName\"**"
             };
 
             //Add a list of modules & descriptions as inline fields to the embed
             foreach (var module in modules)
             {
                 //Ignore all owner & debug modules
-                if (!module.FullName.Contains("OwnerModule") && !module.FullName.Contains("Debug"))
+                if (module.FullName != null && (!module.FullName.Contains("OwnerModule") && !module.FullName.Contains("Debug")))
                 {
                     eb.AddField(module.Name.Replace("Module", ""), GetMethodsStringForEmbed(module), true);
                 }
             }
 
             await ReplyAsync("", false, eb.Build());
+        }
+
+        private async Task ShowCommandHelp(string commandName)
+        {
+            var command = _service.Commands.FirstOrDefault(x => x.Name == commandName);
+            if (command == null)
+                await ReplyAsync(TextUtils.GetWarnText($"Command [{commandName}] not found"));
+            else
+            {
+                var eb = new HelpEmbedBuilder(command);
+                await ReplyAsync("", false, eb.Build());
+            }
         }
 
         /// <summary>
@@ -114,15 +126,10 @@ namespace PestoBot.Modules
         /// <returns></returns>
         private string GetMethodsStringForEmbed(TypeInfo typeInfo)
         {
-            var methods = moduleInfoUtils.GetFirstPublicMethods(typeInfo, 3);
+            var methods = moduleInfoUtils.GetPublicMethods(typeInfo);
             var result = methods.Select(x => moduleInfoUtils.GetCommands(x));
-            return $"`{result.Aggregate((a, x) => a + "`  `" + x)}`";
+            return TextUtils.GetHighlightedFields(result);
         }
-
-        private List<MethodInfo> GetFirstPublicMethodsForModule(TypeInfo typeInfo, int numMethods)
-        {
-             return moduleInfoUtils.GetPublicMethods(typeInfo).Take(numMethods).ToList();
-        } 
 
         private static bool IsOwnerCommand(CommandInfo command)
         {
