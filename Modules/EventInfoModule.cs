@@ -102,14 +102,14 @@ namespace PestoBot.Modules
             foreach (var result in results)
             {
                 var sb = new StringBuilder();
-                sb.Append($"**Start:** " + (result.StartDate == DateTime.MinValue ? "Not set yet!" : result.StartDate.ToShortDateString()));
-                sb.Append($" **End:** " + (result.EndDate == DateTime.MinValue ? "Not set yet!" : result.EndDate.ToShortDateString()));
+                sb.Append($"**Start:** " + (result.StartDate == DateTime.MinValue ? "Not set yet!" : result.StartDate.ToString(TextUtils.EmbedDateFormat)));
+                sb.Append($" **End:** " + (result.EndDate == DateTime.MinValue ? "Not set yet!" : result.EndDate.ToString(TextUtils.EmbedDateFormat)));
                 if (!string.IsNullOrEmpty(result.ApplicationUrl))
                 {
                     sb.Append($"\r\n [Apply Here]({result.ApplicationUrl})");
                     if (result.ScheduleCloseDate != DateTime.MinValue)
                     {
-                        sb.Append($" **Deadline: ** {result.ScheduleCloseDate.ToShortDateString()}");
+                        sb.Append($" **Deadline: ** {result.ScheduleCloseDate.ToString(TextUtils.EmbedDateFormat)}");
                     }
                 }
                 if (!string.IsNullOrEmpty(result.ScheduleUrl))
