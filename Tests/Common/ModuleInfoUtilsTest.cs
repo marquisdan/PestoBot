@@ -27,7 +27,9 @@ namespace PestoBot.Tests.Common
         public void GetsModulesOnly()
         {
             var result = sut.GetAllModules();
-            var nonModules = result.Where(typeInfo => !typeof(ModuleBase).IsAssignableFrom(typeInfo));
+            var nonModules = result.Where(typeInfo => !typeof(ModuleBase).IsAssignableFrom(typeInfo) 
+                                                      && !typeof(ModuleBase<SocketCommandContext>).IsAssignableFrom(typeInfo)
+                                                      && !typeInfo.IsAbstract);
 
             Assert.That(result, Is.Not.Empty);
             Assert.That(nonModules, Is.Empty);
