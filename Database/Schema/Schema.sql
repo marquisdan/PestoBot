@@ -1,5 +1,5 @@
 --
--- File generated with SQLiteStudio v3.2.1 on Wed May 20 16:28:06 2020
+-- File generated with SQLiteStudio v3.2.1 on Thu Jun 11 11:20:34 2020
 --
 -- Text encoding used: System
 --
@@ -144,6 +144,23 @@ CREATE TABLE MarathonTaskAssignment (
     GuildId        BIGINT   REFERENCES Guild (Id),
     UserId         BIGINT   REFERENCES User (Id),
     MarathonTaskId INTEGER  REFERENCES MarathonTask (Id) 
+);
+
+
+-- Table: Reminders
+DROP TABLE IF EXISTS Reminders;
+
+CREATE TABLE Reminders (
+    Id       INTEGER  PRIMARY KEY AUTOINCREMENT
+                      UNIQUE
+                      NOT NULL,
+    Created  DATETIME,
+    Modified DATETIME,
+    Content  TEXT,
+    Interval INTEGER  NOT NULL,
+    EventId  BIGINT   REFERENCES Event (Id),
+    UserId   BIGINT   REFERENCES User (Id),
+    GuildId  BIGINT   REFERENCES Guild (Id) 
 );
 
 
