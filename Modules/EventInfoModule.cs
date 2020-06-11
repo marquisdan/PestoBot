@@ -27,7 +27,7 @@ namespace PestoBot.Modules
 
             if (evnt == null)
             {
-                var msg = evntName == string.Empty ? "No events created yet!" : "That event does not exist!";
+                var msg = evntName == string.Empty ? "No events created yet!" : "That event does not exist. To see a full list of events you can use [ListEvents]";
                 await ReplyAsync(TextUtils.GetWarnText(msg));
             }
             else
@@ -96,7 +96,7 @@ namespace PestoBot.Modules
             {
                 Color = Color.Green,
                 Title = embedTitle,
-                Description = $"For detailed information on a specific event use **[EventInfo \"*Event Name*\"]**"
+                Description = $"For detailed information on a specific event use `EventInfo \"Event Name\"`"
             };
 
             foreach (var result in results)

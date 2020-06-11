@@ -8,7 +8,7 @@ namespace PestoBot.Common
 {
     public static class TextUtils
     {
-        public static string EmbedDateFormat { get; } = "MMMM dd, yyyy";
+        public static string EmbedDateFormat { get; } = "MMMM dd";
 
         public static string GetSuccessText(string msg)
         {
@@ -39,14 +39,8 @@ namespace PestoBot.Common
 
         public static string GetHighlightedFields(IEnumerable<string> fields)
         {
-            //return GetHighlightedFields(fields.ToList());
             return $"`{fields.Aggregate((a, x) => a + "`  `" + x)}`";
         }
-
-        //public static string GetHighlightedFields(List<string> fields)
-        //{
-        //  return  $"`{fields.Aggregate((a, x) => a + "`  `" + x)}`";
-        //}
 
     }
 }
