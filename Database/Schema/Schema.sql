@@ -1,5 +1,5 @@
 --
--- File generated with SQLiteStudio v3.2.1 on Thu Jun 11 11:20:34 2020
+-- File generated with SQLiteStudio v3.2.1 on Fri Jun 12 14:30:50 2020
 --
 -- Text encoding used: System
 --
@@ -156,8 +156,11 @@ CREATE TABLE Reminders (
                       NOT NULL,
     Created  DATETIME,
     Modified DATETIME,
+    LastSent DATETIME,
     Content  TEXT,
     Interval INTEGER  NOT NULL,
+    Type     INTEGER  DEFAULT (0) 
+                      NOT NULL,
     EventId  BIGINT   REFERENCES Event (Id),
     UserId   BIGINT   REFERENCES User (Id),
     GuildId  BIGINT   REFERENCES Guild (Id) 
