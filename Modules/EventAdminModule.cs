@@ -10,6 +10,7 @@ using PestoBot.Common;
 using PestoBot.Common.CustomPreconditions;
 using PestoBot.Database.Models.SpeedrunEvent;
 using PestoBot.Database.Repositories;
+using PestoBot.Database.Repositories.SpeedrunEvent;
 
 namespace PestoBot.Modules
 {

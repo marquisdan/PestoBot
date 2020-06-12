@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
 using Dapper;
 using Microsoft.Data.Sqlite;
-using PestoBot.Database.Models.Guild;
 using PestoBot.Database.Models.SpeedrunEvent;
 using PestoBot.Database.Repositories.Common;
 
-namespace PestoBot.Database.Repositories
+namespace PestoBot.Database.Repositories.SpeedrunEvent
 {
     public class EventRepository: AbstractPestoRepository<EventModel>
     {
