@@ -1,5 +1,5 @@
 --
--- File generated with SQLiteStudio v3.2.1 on Fri Jun 12 14:30:50 2020
+-- File generated with SQLiteStudio v3.2.1 on Fri Jun 12 14:40:06 2020
 --
 -- Text encoding used: System
 --
@@ -147,10 +147,10 @@ CREATE TABLE MarathonTaskAssignment (
 );
 
 
--- Table: Reminders
-DROP TABLE IF EXISTS Reminders;
+-- Table: Reminder
+DROP TABLE IF EXISTS Reminder;
 
-CREATE TABLE Reminders (
+CREATE TABLE Reminder (
     Id       INTEGER  PRIMARY KEY AUTOINCREMENT
                       UNIQUE
                       NOT NULL,
