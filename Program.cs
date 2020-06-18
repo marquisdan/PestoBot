@@ -1,4 +1,5 @@
 ﻿using System;
+using PestoBot.Services;
 using Serilog;
 using Serilog.Sinks.Discord;
 
@@ -19,6 +20,9 @@ namespace PestoBot
                 .WriteTo.Console()
                 .WriteTo.Discord(logWebhookId, logWebhookToken)
                 .CreateLogger();
+                
+            var reminderService = new ReminderService();
+            reminderService.Start();
 
             new PestoBot().MainAsync().GetAwaiter().GetResult();
         }
