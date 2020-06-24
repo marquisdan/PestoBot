@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using PestoBot.Common;
+using PestoBot.Database.Models.Common;
 using PestoBot.Database.Models.SpeedrunEvent;
 using PestoBot.Database.Repositories.SpeedrunEvent;
 using Serilog;
@@ -63,10 +65,15 @@ namespace PestoBot.Services
         protected internal virtual void ProcessReminders(ReminderTypes type)
         {
             //Get list of reminders
+            var reminders = GetListOfReminders(type);
             //Filter into reminders that are due 
+            var dueReminders = reminders.Where(x => ShouldSendReminder(GetDueDate(x)));
             //Send reminders if required
+            foreach (var reminder in dueReminders)
+            {
+                SendReminder(reminder);
+            }
             //Log stuff
-            throw new NotImplementedException();
         }
 
         private List<ReminderModel> GetListOfReminders(ReminderTypes type)
@@ -74,7 +81,46 @@ namespace PestoBot.Services
             throw new NotImplementedException();
         }
 
-        internal virtual bool ShouldSendTaskReminder(DateTime ReminderDueTime)
+        internal virtual bool ShouldSendReminder(DateTime ReminderDueTime)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected internal virtual DateTime GetDueDate(ReminderModel model)
+        {
+            switch ((ReminderTypes) model.Type) {
+                case ReminderTypes.Task:
+                    return GetShortTermDueDate(model);
+                case ReminderTypes.Project:
+                    return GetLongTermDueDate(model);
+                case ReminderTypes.Run:
+                    return GetShortTermDueDate(model);
+                case ReminderTypes.Debug:
+                    throw new NotImplementedException();
+                default:
+                    throw new NotImplementedException();
+            }
+        }
+
+        /// <summary>
+        /// Returns a short term due date for Tasks or Runs
+        /// These are reminders that occur a certain time before a scheduled run or task
+        /// e.g. Tell a runner to get ready 30m before a run
+        /// </summary>
+        /// <returns></returns>
+        protected internal DateTime GetShortTermDueDate(ReminderModel model)
+        {
+            var assignment = GetAssignmentForReminder(model) as MarathonTaskAssignmentModel;
+            throw new NotImplementedException();
+        }
+
+        protected internal DateTime GetLongTermDueDate(ReminderModel model)
+        {
+            var assignment = GetAssignmentForReminder(model) as MarathonProjectModel;
+            throw new NotImplementedException();
+        }
+
+        protected internal virtual IPestoModel GetAssignmentForReminder(ReminderModel model)
         {
             throw new NotImplementedException();
         }
