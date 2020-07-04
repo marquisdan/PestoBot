@@ -35,6 +35,7 @@ namespace PestoBot
             _commandService = InitCommandService();
             _config = ConfigService.BuildConfig();
             _serviceProvider = ConfigureServices(_client);
+            _reminderService = new ReminderService();
             _logger = _serviceProvider.GetRequiredService<ILogger<DiscordSocketClient>>();
         }
 

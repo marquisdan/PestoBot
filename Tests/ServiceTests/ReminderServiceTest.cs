@@ -123,23 +123,47 @@ namespace PestoBot.Tests.ServiceTests
 
                 _sut = _mockSut.Object;
             }
-
+            
             [Test]
             public void GetsShortTermDueDate()
             {
-                _reminderAssignment = new MarathonTaskAssignmentModel()
+                _reminderAssignment = new MarathonTaskAssignmentModel
                 {
                     TaskStartTime = _currentTime.AddMinutes(29)
                 };
 
                 var reminder = new ReminderModel
                 {
-                    Interval = (int) ReminderTypes.Task,
+                    Type = (int) ReminderTypes.Task
                 };
 
                 var result = _sut.GetShortTermDueDate(reminder);
                 var expected = ((MarathonTaskAssignmentModel) _reminderAssignment).TaskStartTime.AddMinutes(-30);
                 Assert.That(result, Is.EqualTo(expected), "Gets correct short term due date");
+            }
+
+            [Test]
+            public void GetsLongTermDueDate()
+            {
+                _reminderAssignment = new MarathonProjectAssignmentModel();
+
+                var dueDate = _currentTime.AddDays(1);
+                var projectModel = new MarathonProjectModel()
+                {
+                    DueDate = dueDate
+                };
+
+                var reminder = new ReminderModel
+                {
+                    Type = (int) ReminderTypes.Project
+                };
+
+                _mockSut.Setup(x => x.GetProjectForAssignment(It.IsAny<MarathonProjectAssignmentModel>()))
+                    .Returns(projectModel);
+                var localSut = _mockSut.Object;
+                var result = localSut.GetLongTermDueDate(reminder);
+                
+                Assert.That(result, Is.EqualTo(dueDate));
             }
         }
     }

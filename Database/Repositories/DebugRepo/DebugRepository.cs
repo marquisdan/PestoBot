@@ -47,7 +47,7 @@ namespace PestoBot.Database.Repositories.DebugRepo
                                    Delete from Event;
                                    Delete from EventVolunteerAssignment;
                                    Delete from MarathonProject;
-                                   Delete from MarathonProjectAssignment;
+                                   Delete from MarathonProjectAssignmentModel;
                                    Delete from MarathonTask;
                                    Delete from MarathonTaskAssignment;
                                    Delete from ServerAdminAssignment;

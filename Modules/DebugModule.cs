@@ -127,5 +127,14 @@ namespace PestoBot.Modules
         {
             await ReplyAsync("Pong! 🏓 **" + ((DiscordSocketClient) Context.Client).Latency + "ms**");
         }
+
+        //[Command("EnableGooby")]
+        //[RequireBotAdmin]
+        //[Summary("Go to bed Gooby")]
+        //public async Task EnableGoobyReminder()
+        //{
+        //    var ಠ_ಠ = "hello";
+        //    Log.Information(ಠ_ಠ);
+        //}
     }
 }

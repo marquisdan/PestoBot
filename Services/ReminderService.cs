@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Xml.Serialization;
 using PestoBot.Common;
 using PestoBot.Database.Models.Common;
 using PestoBot.Database.Models.SpeedrunEvent;
@@ -78,6 +79,8 @@ namespace PestoBot.Services
 
         private List<ReminderModel> GetListOfReminders(ReminderTypes type)
         {
+            var repo = new ReminderRepository();
+            return repo.GetListOfReminders(type).Result;
             throw new NotImplementedException();
         }
 
@@ -116,11 +119,18 @@ namespace PestoBot.Services
 
         protected internal DateTime GetLongTermDueDate(ReminderModel model)
         {
-            var assignment = GetAssignmentForReminder(model) as MarathonProjectModel;
+            var assignment = GetAssignmentForReminder(model) as MarathonProjectAssignmentModel;
+            var project = GetProjectForAssignment(assignment);
+
             throw new NotImplementedException();
         }
 
         protected internal virtual IPestoModel GetAssignmentForReminder(ReminderModel model)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected internal virtual MarathonProjectModel GetProjectForAssignment(MarathonProjectAssignmentModel model)
         {
             throw new NotImplementedException();
         }
