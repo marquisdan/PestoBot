@@ -3,7 +3,7 @@ using PestoBot.Database.Models.Common;
 
 namespace PestoBot.Database.Models.SpeedrunEvent
 {
-    public class MarathonProjectAssignment : AbstractPestoModel
+    public class MarathonProjectAssignmentModel : AbstractPestoModel
     {
         public DateTime Created { get; set; }
         public DateTime Modified { get; set; }
