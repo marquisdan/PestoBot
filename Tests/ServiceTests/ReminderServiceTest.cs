@@ -85,7 +85,7 @@ namespace PestoBot.Tests.ServiceTests
                 };
                 var result = _sut.ShouldSendTaskReminder(reminder);
 
-                Assert.That(result, Is.True, "Does not send reminder if already sent");
+                Assert.That(result, Is.False, "Does not send reminder if already sent");
             }
         }
 
