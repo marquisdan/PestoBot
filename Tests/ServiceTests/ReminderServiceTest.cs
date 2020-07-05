@@ -16,22 +16,30 @@ namespace PestoBot.Tests.ServiceTests
         {
             private ReminderService _sut;
             private DateTime _currentTime;
+            private DateTime _dueDate;
+            private ReminderModel reminder;
 
             [SetUp]
             public void SetUp()
             {
                 _currentTime = DateTime.Parse("October 29, 2019 16:30:00");
                 var mockSut = new Mock<ReminderService>() { CallBase = true };
-                mockSut.Setup(x => x.GetCurrentTime()).Returns(_currentTime);
+                mockSut.Setup(x => x.GetCurrentTime()).Returns(() => _currentTime);
+                mockSut.Setup(x => x.GetDueDate(It.IsAny<ReminderModel>())).Returns(() => _dueDate);
+                reminder = new ReminderModel
+                {
+                    Type = (int)ReminderTypes.Task,
+                    LastSent = DateTime.MinValue
+                };
                 _sut = mockSut.Object;
             }
 
             [Test]
             public void SendsReminderIfWithinTime()
             {
-                var reminderDueTime = _currentTime.AddMinutes(ReminderService.TaskReminderTime -1);
+                _dueDate = _currentTime.AddMinutes((int) ReminderTimes.Task - 1);
 
-                var result = _sut.ShouldSendReminder(reminderDueTime);
+                var result = _sut.ShouldSendTaskReminder(reminder);
 
                 Assert.That(result, Is.True, "Flags to send reminder if task due date is within window");
             }
@@ -39,9 +47,9 @@ namespace PestoBot.Tests.ServiceTests
             [Test]
             public void DoesNotSendReminderIfPastDueDate()
             {
-                var reminderDueTime = _currentTime.AddMinutes(-1);
+                _dueDate = _currentTime.AddMinutes(-1);
 
-                var result = _sut.ShouldSendReminder(reminderDueTime);
+                var result = _sut.ShouldSendReminder(reminder);
 
                 Assert.That(result, Is.False, "Does not send task reminder if due date is passed");
             }
@@ -49,9 +57,9 @@ namespace PestoBot.Tests.ServiceTests
             [Test]
             public void DoesNotSendReminderIfTooEarlyForWindow()
             {
-                var reminderDueTime = _currentTime.AddMinutes(ReminderService.TaskReminderTime + 1);
+                _dueDate = _currentTime.AddMinutes(ReminderService.TaskReminderTime + 1);
 
-                var result = _sut.ShouldSendReminder(reminderDueTime);
+                var result = _sut.ShouldSendReminder(reminder);
 
                 Assert.That(result, Is.False, "Does not send task reminder if due date is not yet within window");
             }
@@ -59,11 +67,25 @@ namespace PestoBot.Tests.ServiceTests
             [Test]
             public void SendsReminderIfExactlyAtWindow()
             {
-                var reminderDueTime = _currentTime.AddMinutes(ReminderService.TaskReminderTime);
+                _dueDate = _currentTime.AddMinutes(ReminderService.TaskReminderTime);
 
-                var result = _sut.ShouldSendReminder(reminderDueTime);
+                var result = _sut.ShouldSendReminder(reminder);
 
                 Assert.That(result, Is.True, "Flags to send reminder if task due date exactly at window");
+            }
+
+            [Test]
+            public void DoesNotSendReminderIfAlreadySent()
+            {
+                _dueDate = _currentTime.AddMinutes((int)ReminderTimes.Task - 1);
+                reminder = new ReminderModel()
+                {
+                    Type = (int) ReminderTypes.Task,
+                    LastSent = DateTime.Now.AddMinutes(-5)
+                };
+                var result = _sut.ShouldSendTaskReminder(reminder);
+
+                Assert.That(result, Is.True, "Does not send reminder if already sent");
             }
         }
 
@@ -138,7 +160,7 @@ namespace PestoBot.Tests.ServiceTests
                 };
 
                 var result = _sut.GetShortTermDueDate(reminder);
-                var expected = ((MarathonTaskAssignmentModel) _reminderAssignment).TaskStartTime.AddMinutes(-30);
+                var expected = ((MarathonTaskAssignmentModel) _reminderAssignment).TaskStartTime;
                 Assert.That(result, Is.EqualTo(expected), "Gets correct short term due date");
             }
 

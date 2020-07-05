@@ -15,6 +15,7 @@ namespace PestoBot.Services
 {
     public enum ReminderTimes
     {
+        Task = 30, //Fire task reminders 30m in advance
         Project = 17, //Fire daily reminders at 5pm
         GoobyTime = 20 //Fire Gooby reminder at 8pm
     }
@@ -34,25 +35,29 @@ namespace PestoBot.Services
         public void Start()
         {
             reminderTimer = new Timer(WakeReminderService, null, 0, Minute * 5);
+           // reminderTimer = new Timer(WakeReminderService, null, 0, 5000); //5 second sleep period for debugging/Testing
         }
 
         internal void WakeReminderService(object state)
         {
             Log.Information($"{DateTime.Now.ToString(LogDateFormat)} : Waking Reminder Service");
-            Log.Information("Processing tasks");
+            FireRemindersByType();
             Log.Information($"{DateTime.Now.ToString(LogDateFormat)} : Reminder Service Sleeping");
         }
 
         protected internal void FireRemindersByType()
         {
+            Log.Information("Processing tasks");
             ProcessReminders(ReminderTypes.Task);
             if (IsTimeToProcessReminders(ReminderTimes.Project))
             {
+                Log.Information("Processing Project Reminders");
                 ProcessReminders(ReminderTypes.Project);
             }
 
             if (IsTimeToProcessReminders(ReminderTimes.GoobyTime))
             {
+                Log.Information("Processing Debug Reminders");
                 ProcessReminders(ReminderTypes.Debug);
             }
         }
@@ -65,28 +70,54 @@ namespace PestoBot.Services
 
         protected internal virtual void ProcessReminders(ReminderTypes type)
         {
+            if (type == ReminderTypes.Project)
+            {
+                Log.Warning("Project reminders are disabled until design refactor is complete");
+                return;
+            }
             //Get list of reminders
             var reminders = GetListOfReminders(type);
             //Filter into reminders that are due 
-            var dueReminders = reminders.Where(x => ShouldSendReminder(GetDueDate(x)));
+            var dueReminders = reminders.Where(ShouldSendReminder);
             //Send reminders if required
             foreach (var reminder in dueReminders)
             {
                 SendReminder(reminder);
             }
-            //Log stuff
         }
 
         private List<ReminderModel> GetListOfReminders(ReminderTypes type)
         {
             var repo = new ReminderRepository();
-            return repo.GetListOfReminders(type).Result;
-            throw new NotImplementedException();
+            return repo.GetRemindersByType(type).Result;
         }
 
-        internal virtual bool ShouldSendReminder(DateTime ReminderDueTime)
+        internal virtual bool ShouldSendReminder(ReminderModel model)
         {
-            throw new NotImplementedException();
+            switch ((ReminderTypes) model.Type)
+            {
+                case ReminderTypes.Task:
+                    return ShouldSendTaskReminder(model);
+                //Implement other reminder types here
+                default: return false;
+            }
+            
+        }
+
+        protected internal virtual bool ShouldSendTaskReminder(ReminderModel model)
+        {
+            if (model.LastSent != DateTime.MinValue) return false; //Do not send reminder if it has already been sent
+
+            var dueDate = GetDueDate(model);
+            var currentTime = GetCurrentTime();
+            var timeSpan = dueDate - currentTime;
+            if (dueDate < currentTime)
+            {
+                //Do not send a reminder if reminder time already past
+                return false;
+            }
+            //Finally, determine if within reminder window and return result
+            return timeSpan <= TimeSpan.FromMinutes((int) ReminderTimes.Task); 
         }
 
         protected internal virtual DateTime GetDueDate(ReminderModel model)
@@ -114,20 +145,26 @@ namespace PestoBot.Services
         protected internal DateTime GetShortTermDueDate(ReminderModel model)
         {
             var assignment = GetAssignmentForReminder(model) as MarathonTaskAssignmentModel;
-            throw new NotImplementedException();
+            return assignment?.TaskStartTime ?? DateTime.MinValue;
         }
 
+
+        /// <summary>
+        /// Returns a long term due date for Projects that may span multiple marathons or may not be tied to a specific marathon.
+        /// Examples include Creating a website, writing a schedule, recruiting runners etc
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         protected internal DateTime GetLongTermDueDate(ReminderModel model)
         {
             var assignment = GetAssignmentForReminder(model) as MarathonProjectAssignmentModel;
             var project = GetProjectForAssignment(assignment);
-
-            throw new NotImplementedException();
+            return project.DueDate ?? DateTime.MinValue;
         }
 
         protected internal virtual IPestoModel GetAssignmentForReminder(ReminderModel model)
         {
-            throw new NotImplementedException();
+            return new ReminderRepository().GetAssignmentForReminder(model).Result;
         }
 
         protected internal virtual MarathonProjectModel GetProjectForAssignment(MarathonProjectAssignmentModel model)
