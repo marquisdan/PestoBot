@@ -89,7 +89,7 @@ namespace PestoBot.Tests.ServiceTests
             }
         }
 
-        class ProcessesTaskReminders
+        class ProcessRemindersTest
         {
             private ReminderService _sut;
             private Mock<ReminderService> _mockSut;
@@ -100,8 +100,8 @@ namespace PestoBot.Tests.ServiceTests
                 _currentTime = DateTime.Parse("October 29, 2019 16:30:00");
                 _mockSut = new Mock<ReminderService>() {CallBase = true};
                 _mockSut.Setup(x => x.GetCurrentTime()).Returns(() => _currentTime);
+                _mockSut.Setup(x => x.GetListOfReminders(It.IsAny<ReminderTypes>())).Returns(new List<ReminderModel>());
 
-                _sut = _mockSut.Object;
             }
 
             [Test]

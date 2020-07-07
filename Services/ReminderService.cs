@@ -86,7 +86,7 @@ namespace PestoBot.Services
             }
         }
 
-        private List<ReminderModel> GetListOfReminders(ReminderTypes type)
+        protected internal virtual List<ReminderModel> GetListOfReminders(ReminderTypes type)
         {
             var repo = new ReminderRepository();
             return repo.GetRemindersByType(type).Result;
