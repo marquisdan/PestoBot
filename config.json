@@ -11,5 +11,27 @@
     "BotSandbox": 699621364654407700
   },
   "BotAdminRoles": ["PestoAdmin","BotAdmin"],
-  "DefaultPrefix": "%"
+  "DefaultPrefix": "%",
+  "Webhooks": {
+    "FullLog": {
+      "Id": 1,
+      "Token": ""
+    },
+  "Warn": {
+      "Id": 1,
+      "Token": ""
+    },
+    "Error": {
+      "Id": 1,
+      "Token": ""
+    },
+    "Debug": {
+      "Id": 1,
+      "Token": ""
+    },
+    "ReminderService": {
+      "Id": 1,
+      "Token": ""
+    }
+  } 
 }
