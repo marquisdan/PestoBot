@@ -1,19 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using PestoBot.Database.Models;
 using PestoBot.Database.Repositories.Guild;
 using PestoBot.Services;
 using Serilog;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Configuration.Json;
 
 
 namespace PestoBot
@@ -21,64 +16,15 @@ namespace PestoBot
     class PestoBot
     {
         private static DiscordSocketClient _client;
-        private static CommandService _commandService;
-        private static IConfiguration _config;
-        private readonly IServiceProvider _serviceProvider;
-        private readonly Microsoft.Extensions.Logging.ILogger _logger;
+        private static CommandHandler _commandHandler;
+        private readonly ReminderService _reminderService;
 
-
-        #region Constructor & Initialize
-        public PestoBot()
+        public PestoBot(IServiceProvider services)
         {
-            _client = InitClient();
-            _commandService = InitCommandService();
-            _config = ConfigService.BuildConfig();
-            _serviceProvider = ConfigureServices(_client);
-            _logger = _serviceProvider.GetRequiredService<ILogger<DiscordSocketClient>>();
+            _client = services.GetRequiredService<DiscordSocketClient>();
+            _commandHandler = services.GetRequiredService<CommandHandler>();
+            _reminderService = services.GetService<ReminderService>();
         }
-
-        /// <summary>
-        /// Initialize Discord Client
-        /// </summary>
-        /// <returns></returns>
-        private DiscordSocketClient InitClient() =>
-            new DiscordSocketClient(new DiscordSocketConfig
-            {
-                HandlerTimeout = 5000
-            });
-
-        /// <summary>
-        /// Initialize Commandservice with desired config (Call from constructor)
-        /// </summary>
-        /// <returns></returns>
-        private CommandService InitCommandService() =>
-            new CommandService(new CommandServiceConfig
-            {
-                CaseSensitiveCommands = false,
-                DefaultRunMode = RunMode.Async
-            });
-
-        /// <summary>
-        /// Adds all services
-        /// </summary>
-        /// <returns></returns>
-        private static IServiceProvider ConfigureServices(DiscordSocketClient client)
-        {
-            var map = new ServiceCollection()
-                .AddSingleton(_config)
-                .AddSingleton(_client)
-                .AddSingleton(_commandService)
-                .AddSingleton<CommandHandler>()
-                .AddSingleton<LogService>()
-                .AddSingleton<ReminderService>()
-                .AddLogging(configure => configure.AddSerilog());
-
-            map.Configure<LoggerFilterOptions>(options => options.MinLevel = LogLevel.Information);
-
-            return map.BuildServiceProvider();
-        }
-
-        #endregion
 
         /// <summary>
         /// Connects bot to server, runs services. Keeps bot connected
@@ -97,9 +43,9 @@ namespace PestoBot
             _client.GuildUnavailable += AnnounceDisconnectAsync;
 
             //Start up / init our various services
-            _serviceProvider.GetRequiredService<ReminderService>().Start();
-            _serviceProvider.GetRequiredService<LogService>();
-            await _serviceProvider.GetRequiredService<CommandHandler>().InstallCommandsAsync();
+            _reminderService.Start();
+           // _serviceProvider.GetRequiredService<LogService>();
+            await _commandHandler.InstallCommandsAsync();
 
             //Keep bot connected
             await Task.Delay(Timeout.Infinite);

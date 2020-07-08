@@ -1,4 +1,5 @@
 ﻿using System;
+using PestoBot.Common;
 using PestoBot.Services;
 using Serilog;
 using Serilog.Events;
@@ -10,8 +11,9 @@ namespace PestoBot
     {
         static void Main(string[] args)
         {
+            var serviceProvider = ServicesConfiguration.ConfigureServices();
             SetUpLogger();
-            new PestoBot().MainAsync().GetAwaiter().GetResult();
+            new PestoBot(serviceProvider).MainAsync().GetAwaiter().GetResult();
         }
 
         private static void SetUpLogger()
