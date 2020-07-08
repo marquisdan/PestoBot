@@ -1,15 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Xml.Serialization;
+using Discord.Commands;
+using Discord.WebSocket;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using PestoBot.Common;
 using PestoBot.Database.Models.Common;
 using PestoBot.Database.Models.SpeedrunEvent;
 using PestoBot.Database.Repositories.SpeedrunEvent;
 using Serilog;
+using Serilog.Core;
+using Serilog.Events;
+using Serilog.Sinks.Discord;
+using ILogger = Serilog.ILogger;
 
 namespace PestoBot.Services
 {
@@ -22,27 +28,69 @@ namespace PestoBot.Services
 
     public class ReminderService
     {
+        private ulong reminderServiceId;
+        private string reminderServiceToken;
         private const int Minute = 60000;
         private const int Hour = Minute * 60;
         private const int Day = Hour * 24;
         internal const int TaskReminderTime = 30; //Remind tasks this many minutes before due date
         private const string LogDateFormat = "MMMM dd, yyyy HH:mm:ss tt zz";
 
+        //Service injection 
+        private IConfiguration _config;
+        private DiscordSocketClient _client;
+        private CommandService _commands;
+        private Microsoft.Extensions.Logging.ILogger _logger;
+        private IServiceProvider _serviceProvider;
+
         //Times for specific reminder types
 
         private Timer reminderTimer;
+        private readonly ILogger ReminderServiceLog; //separate log to filter out Reminder Service events 
+
+        public ReminderService(IServiceProvider services)
+        {
+            // ReSharper disable VirtualMemberCallInConstructor
+            InitServices(services);
+            reminderServiceId = ulong.Parse(_config.GetSection("Webhooks").GetSection("ReminderService").GetSection("Id").Value);
+            reminderServiceToken = _config.GetSection("Webhooks").GetSection("ReminderService").GetSection("Token").Value;
+            ReminderServiceLog = CreateReminderServiceLoggerConfiguration();
+        }
+
+        private Logger CreateReminderServiceLoggerConfiguration()
+        {
+            return new LoggerConfiguration()
+                .WriteTo.Discord(reminderServiceId, reminderServiceToken)
+                .WriteTo.File("PestoLogs/Services/Reminder_Service.log", rollingInterval: RollingInterval.Day)
+                .WriteTo.Console()
+                .WriteTo.Logger(l => l.Filter.ByIncludingOnly(e => e.Level == LogEventLevel.Debug).WriteTo.File("PestoLogs/Services/Reminder_Service_Debug.log", rollingInterval: RollingInterval.Day))
+                .WriteTo.Logger(l => l.Filter.ByIncludingOnly(e => e.Level == LogEventLevel.Warning).WriteTo.File("PestoLogs/Services/Reminder_Service_Debug.log", rollingInterval: RollingInterval.Day))
+                .WriteTo.Logger(l => l.Filter.ByIncludingOnly(e => e.Level == LogEventLevel.Error).WriteTo.File("PestoLogs/Services/Reminder_Service_Debug.log", rollingInterval: RollingInterval.Day))
+                .CreateLogger();
+        }
+
+        protected internal virtual void InitServices(IServiceProvider services)
+        {
+            _config = services.GetRequiredService<IConfiguration>();
+            _client = services.GetRequiredService<DiscordSocketClient>();
+            _commands = services.GetRequiredService<CommandService>();
+            _logger = services.GetRequiredService<ILogger<CommandHandler>>();
+            _serviceProvider = services;
+        }
 
         public void Start()
         {
             reminderTimer = new Timer(WakeReminderService, null, 0, Minute * 5);
-           // reminderTimer = new Timer(WakeReminderService, null, 0, 5000); //5 second sleep period for debugging/Testing
+            //reminderTimer = new Timer(WakeReminderService, null, 0, 5000); //5 second sleep period for debugging/Testing
         }
 
         internal void WakeReminderService(object state)
         {
-            Log.Information($"{DateTime.Now.ToString(LogDateFormat)} : Waking Reminder Service");
+            //Log.Information($"{DateTime.Now.ToString(LogDateFormat)} : Waking Reminder Service");
+            ReminderServiceLog.Information($"{DateTime.Now.ToString(LogDateFormat)} : Waking Reminder Service");
             FireRemindersByType();
-            Log.Information($"{DateTime.Now.ToString(LogDateFormat)} : Reminder Service Sleeping");
+           // Log.Information($"{DateTime.Now.ToString(LogDateFormat)} : Reminder Service Sleeping");
+            ReminderServiceLog.Information($"{DateTime.Now.ToString(LogDateFormat)} : Reminder Service Sleeping");
         }
 
         protected internal void FireRemindersByType()

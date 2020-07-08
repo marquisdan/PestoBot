@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection.Metadata;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NUnit.Framework;
 using PestoBot.Common;
@@ -23,7 +24,9 @@ namespace PestoBot.Tests.ServiceTests
             public void SetUp()
             {
                 _currentTime = DateTime.Parse("October 29, 2019 16:30:00");
-                var mockSut = new Mock<ReminderService>() { CallBase = true };
+                var provider = new ServiceCollection().BuildServiceProvider();
+                var mockSut = new Mock<ReminderService>(provider) { CallBase = true };
+                mockSut.Setup(x => x.InitServices(It.IsAny<IServiceProvider>()));
                 mockSut.Setup(x => x.GetCurrentTime()).Returns(() => _currentTime);
                 mockSut.Setup(x => x.GetDueDate(It.IsAny<ReminderModel>())).Returns(() => _dueDate);
                 reminder = new ReminderModel
@@ -98,7 +101,9 @@ namespace PestoBot.Tests.ServiceTests
             public void SetUp()
             {
                 _currentTime = DateTime.Parse("October 29, 2019 16:30:00");
-                _mockSut = new Mock<ReminderService>() {CallBase = true};
+                var provider = new ServiceCollection().BuildServiceProvider();
+                _mockSut = new Mock<ReminderService>(provider) { CallBase = true };
+                _mockSut.Setup(x => x.InitServices(It.IsAny<IServiceProvider>()));
                 _mockSut.Setup(x => x.GetCurrentTime()).Returns(() => _currentTime);
                 _mockSut.Setup(x => x.GetListOfReminders(It.IsAny<ReminderTypes>())).Returns(new List<ReminderModel>());
 
@@ -138,7 +143,9 @@ namespace PestoBot.Tests.ServiceTests
             public void SetUp()
             {
                 _currentTime = DateTime.Parse("October 29, 2019 16:30:00");
-                _mockSut = new Mock<ReminderService>() { CallBase = true };
+                var provider = new ServiceCollection().BuildServiceProvider();
+                _mockSut = new Mock<ReminderService>(provider) { CallBase = true };
+                _mockSut.Setup(x => x.InitServices(It.IsAny<IServiceProvider>()));
                 _mockSut.Setup(x => x.GetCurrentTime()).Returns(() => _currentTime);
                 _mockSut.Setup(x => x.GetAssignmentForReminder(It.IsAny<ReminderModel>()))
                         .Returns(() => _reminderAssignment);

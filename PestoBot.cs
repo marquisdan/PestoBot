@@ -22,7 +22,6 @@ namespace PestoBot
     {
         private static DiscordSocketClient _client;
         private static CommandService _commandService;
-        private static ReminderService _reminderService;
         private static IConfiguration _config;
         private readonly IServiceProvider _serviceProvider;
         private readonly Microsoft.Extensions.Logging.ILogger _logger;
@@ -35,7 +34,6 @@ namespace PestoBot
             _commandService = InitCommandService();
             _config = ConfigService.BuildConfig();
             _serviceProvider = ConfigureServices(_client);
-            _reminderService = new ReminderService();
             _logger = _serviceProvider.GetRequiredService<ILogger<DiscordSocketClient>>();
         }
 
@@ -99,7 +97,7 @@ namespace PestoBot
             _client.GuildUnavailable += AnnounceDisconnectAsync;
 
             //Start up / init our various services
-            _reminderService.Start();
+            _serviceProvider.GetRequiredService<ReminderService>().Start();
             _serviceProvider.GetRequiredService<LogService>();
             await _serviceProvider.GetRequiredService<CommandHandler>().InstallCommandsAsync();
 

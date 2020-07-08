@@ -31,7 +31,7 @@ namespace PestoBot.Services
         public CommandHandler(IServiceProvider services)
         {
             // Virtual for mocking in test
-            // ReSharper disable once VirtualMemberCallInConstructor
+            // ReSharper disable VirtualMemberCallInConstructor
             InitServices(services);
             InitFields();
         }
