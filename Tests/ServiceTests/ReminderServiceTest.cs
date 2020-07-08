@@ -8,6 +8,7 @@ using PestoBot.Common;
 using PestoBot.Database.Models.Common;
 using PestoBot.Database.Models.SpeedrunEvent;
 using PestoBot.Services;
+using Serilog;
 
 namespace PestoBot.Tests.ServiceTests
 {
@@ -27,6 +28,7 @@ namespace PestoBot.Tests.ServiceTests
                 var provider = new ServiceCollection().BuildServiceProvider();
                 var mockSut = new Mock<ReminderService>(provider) { CallBase = true };
                 mockSut.Setup(x => x.InitServices(It.IsAny<IServiceProvider>()));
+                mockSut.Setup(x => x.CreateReminderServiceLoggerConfiguration()).Returns(new LoggerConfiguration().CreateLogger);
                 mockSut.Setup(x => x.GetCurrentTime()).Returns(() => _currentTime);
                 mockSut.Setup(x => x.GetDueDate(It.IsAny<ReminderModel>())).Returns(() => _dueDate);
                 reminder = new ReminderModel
@@ -104,6 +106,7 @@ namespace PestoBot.Tests.ServiceTests
                 var provider = new ServiceCollection().BuildServiceProvider();
                 _mockSut = new Mock<ReminderService>(provider) { CallBase = true };
                 _mockSut.Setup(x => x.InitServices(It.IsAny<IServiceProvider>()));
+                _mockSut.Setup(x => x.CreateReminderServiceLoggerConfiguration()).Returns(new LoggerConfiguration().CreateLogger);
                 _mockSut.Setup(x => x.GetCurrentTime()).Returns(() => _currentTime);
                 _mockSut.Setup(x => x.GetListOfReminders(It.IsAny<ReminderTypes>())).Returns(new List<ReminderModel>());
 
@@ -146,6 +149,7 @@ namespace PestoBot.Tests.ServiceTests
                 var provider = new ServiceCollection().BuildServiceProvider();
                 _mockSut = new Mock<ReminderService>(provider) { CallBase = true };
                 _mockSut.Setup(x => x.InitServices(It.IsAny<IServiceProvider>()));
+                _mockSut.Setup(x => x.CreateReminderServiceLoggerConfiguration()).Returns(new LoggerConfiguration().CreateLogger);
                 _mockSut.Setup(x => x.GetCurrentTime()).Returns(() => _currentTime);
                 _mockSut.Setup(x => x.GetAssignmentForReminder(It.IsAny<ReminderModel>()))
                         .Returns(() => _reminderAssignment);

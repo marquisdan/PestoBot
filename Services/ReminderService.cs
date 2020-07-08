@@ -52,13 +52,13 @@ namespace PestoBot.Services
         {
             // ReSharper disable VirtualMemberCallInConstructor
             InitServices(services);
-            reminderServiceId = ulong.Parse(_config.GetSection("Webhooks").GetSection("ReminderService").GetSection("Id").Value);
-            reminderServiceToken = _config.GetSection("Webhooks").GetSection("ReminderService").GetSection("Token").Value;
             ReminderServiceLog = CreateReminderServiceLoggerConfiguration();
         }
 
-        private Logger CreateReminderServiceLoggerConfiguration()
+        protected internal virtual Logger CreateReminderServiceLoggerConfiguration()
         {
+            reminderServiceId = ulong.Parse(_config.GetSection("Webhooks").GetSection("ReminderService").GetSection("Id").Value);
+            reminderServiceToken = _config.GetSection("Webhooks").GetSection("ReminderService").GetSection("Token").Value;
             return new LoggerConfiguration()
                 .WriteTo.Discord(reminderServiceId, reminderServiceToken)
                 .WriteTo.File("PestoLogs/Services/Reminder_Service.log", rollingInterval: RollingInterval.Day)
@@ -86,26 +86,24 @@ namespace PestoBot.Services
 
         internal void WakeReminderService(object state)
         {
-            //Log.Information($"{DateTime.Now.ToString(LogDateFormat)} : Waking Reminder Service");
             ReminderServiceLog.Information($"{DateTime.Now.ToString(LogDateFormat)} : Waking Reminder Service");
             FireRemindersByType();
-           // Log.Information($"{DateTime.Now.ToString(LogDateFormat)} : Reminder Service Sleeping");
             ReminderServiceLog.Information($"{DateTime.Now.ToString(LogDateFormat)} : Reminder Service Sleeping");
         }
 
         protected internal void FireRemindersByType()
         {
-            Log.Information("Processing tasks");
+            ReminderServiceLog.Information($"Processing tasks");
             ProcessReminders(ReminderTypes.Task);
             if (IsTimeToProcessReminders(ReminderTimes.Project))
             {
-                Log.Information("Processing Project Reminders");
+                ReminderServiceLog.Information("Processing Project Reminders");
                 ProcessReminders(ReminderTypes.Project);
             }
 
             if (IsTimeToProcessReminders(ReminderTimes.GoobyTime))
             {
-                Log.Information("Processing Debug Reminders");
+                ReminderServiceLog.Information("Processing Debug Reminders");
                 ProcessReminders(ReminderTypes.Debug);
             }
         }
@@ -120,7 +118,7 @@ namespace PestoBot.Services
         {
             if (type == ReminderTypes.Project)
             {
-                Log.Warning("Project reminders are disabled until design refactor is complete");
+                ReminderServiceLog.Warning("Project reminders are disabled until design refactor is complete");
                 return;
             }
             //Get list of reminders
