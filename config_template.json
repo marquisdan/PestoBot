@@ -1,0 +1,37 @@
+{
+  "ConnectionStrings": {
+    "PestoDb": "Data Source=PestoBot.db;Mode=ReadWriteCreate"
+  },
+  "Emotes": {
+    "EscapedPesto": "<:Pesto:613072816367206430>",
+    "EscapedDabesto": "<:Dabesto:613080034915385344>"
+  },
+  "SpecialGuilds": {
+    "MWSF": 140652251206254592,
+    "BotSandbox": 699621364654407700
+  },
+  "BotAdminRoles": ["PestoAdmin","BotAdmin"],
+  "DefaultPrefix": "%",
+  "Webhooks": {
+    "FullLog": {
+      "Id": 702970647948689539,
+      "Token": "77rgBSJpRNBSvpanMTBcDSiWu-XG5nvBosR_Sw0r5c0KgUOF9R8Q1ENFkAZpB3p2hiZd"
+    },
+    "Warn": {
+      "Id": 730144664304484464,
+      "Token": "DEEFfw36lN38Bfqk3T_O7UBEIfS3gcedKiOOQOsjItW4Dy5SjCXv_ye0rF1j_NmkS8Tv"
+    },
+    "Error": {
+      "Id": 730145423515320342,
+      "Token": "L0PlEkaQJX1mvOi7OO922M1m--Di5DsT5KIm7pNXJ3Yu20sRqakUVRig_YpldKKqDnwS"
+    },
+    "Debug": {
+      "Id": 730147173555109978,
+      "Token": "DydPZqsiLQD-SBHujN2Aj1e0T1yZLWQl7ZC4PEaXyVy8HHqt_xDx_05srle0E3muRlOX"
+    },
+    "ReminderService": {
+      "Id": 730153895573192755,
+      "Token": "RQvfttGLXkqaMS0vIIEH38IsCjDKBGUbXYbJOFIdHfeWQTqDRvxfZipYp59N6Y5hvEAV"
+    }
+  } 
+}

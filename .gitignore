@@ -351,3 +351,6 @@ MigrationBackup/
 
 #Hide Pesto DB
 PestoBot.db
+
+# hide the used config json and just include the template
+config.json
