@@ -1,5 +1,5 @@
 --
--- File generated with SQLiteStudio v3.2.1 on Wed Jun 24 16:14:16 2020
+-- File generated with SQLiteStudio v3.2.1 on Thu Jul 9 15:38:53 2020
 --
 -- Text encoding used: System
 --
@@ -54,6 +54,19 @@ CREATE TABLE EventVolunteerAssignment (
 );
 
 
+-- Table: GlobalSettings
+DROP TABLE IF EXISTS GlobalSettings;
+
+CREATE TABLE GlobalSettings (
+    Id                    INTEGER  PRIMARY KEY AUTOINCREMENT,
+    Created               DATETIME,
+    Modified              DATETIME,
+    DebugRemindersEnabled BOOLEAN  DEFAULT (0),
+    DebugReminderHour     INTEGER,
+    DebugReminderMinutes  INTEGER
+);
+
+
 -- Table: Guild
 DROP TABLE IF EXISTS Guild;
 
@@ -84,6 +97,7 @@ CREATE TABLE GuildSettings (
     ProjectReminderChannel BIGINT,
     TaskReminderChannel    BIGINT,
     RunnerReminderChannel  BIGINT,
+    DebugReminderChannel   BIGINT,
     GuildId                BIGINT   REFERENCES Guild (Id) 
 );
 

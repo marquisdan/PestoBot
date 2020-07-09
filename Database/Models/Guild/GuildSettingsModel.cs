@@ -11,6 +11,7 @@ namespace PestoBot.Database.Models.Guild
         public ulong ProjectReminderChannel { get; set; }
         public ulong TaskReminderChannel { get; set; }
         public ulong RunnerReminderChannel { get; set; }
+        public ulong DebugReminderChannel { get; set; }
         public ulong GuildId { get; set; }
     }
 }

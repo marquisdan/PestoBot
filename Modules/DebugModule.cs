@@ -41,7 +41,7 @@ namespace PestoBot.Modules
         public async Task AddPersonAsync(string first, string last)
         {
             var repo = new DebugRepository();
-            var person = new DebugModel
+            var person = new DebugPersonModel
             {
                 FirstName = first,
                 LastName = last

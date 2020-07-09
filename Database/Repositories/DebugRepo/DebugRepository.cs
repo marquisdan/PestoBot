@@ -10,25 +10,25 @@ using PestoBot.Database.Repositories.Common;
 
 namespace PestoBot.Database.Repositories.DebugRepo
 {
-    public class DebugRepository : AbstractPestoRepository<DebugModel>
+    public class DebugRepository : AbstractPestoRepository<DebugPersonModel>
     {
         public DebugRepository()
         {
             TableName = "DebugPerson";
         }
 
-        public List<DebugModel> LoadPeople()
+        public List<DebugPersonModel> LoadPeople()
         {
             //"Using" statement ensures db connection is closed. We do not have to use .dispose() or anything. 
             using (IDbConnection db = new SqliteConnection(LoadConnectionString()))
             {
                 //Hard coded query for testing
-                var output = db.Query<DebugModel>($"select * from {TableName} ", new DynamicParameters());
+                var output = db.Query<DebugPersonModel>($"select * from {TableName} ", new DynamicParameters());
                 return output.ToList();
             }
         }
 
-        public void SavePerson(DebugModel debug)
+        public void SavePerson(DebugPersonModel debug)
         {
             //"Using" statement ensures db connection is closed. We do not have to use .dispose() or anything. 
             using (IDbConnection db = new SqliteConnection(LoadConnectionString()))
