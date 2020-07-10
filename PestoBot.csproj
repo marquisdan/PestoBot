@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup Label="MyData">
-    <None Update="config_template.json">
+    <None Update="keys.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="config.json">

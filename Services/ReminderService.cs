@@ -57,8 +57,9 @@ namespace PestoBot.Services
 
         protected internal virtual Logger CreateReminderServiceLoggerConfiguration()
         {
-            reminderServiceId = ulong.Parse(_config.GetSection("Webhooks").GetSection("ReminderService").GetSection("Id").Value);
-            reminderServiceToken = _config.GetSection("Webhooks").GetSection("ReminderService").GetSection("Token").Value;
+            var keys = ConfigService.BuildKeysConfig();
+            reminderServiceId = ulong.Parse(keys.GetSection("Webhooks").GetSection("ReminderService").GetSection("Id").Value);
+            reminderServiceToken = keys.GetSection("Webhooks").GetSection("ReminderService").GetSection("Token").Value;
             return new LoggerConfiguration()
                 .WriteTo.Discord(reminderServiceId, reminderServiceToken)
                 .WriteTo.File("PestoLogs/Services/Reminder_Service.log", rollingInterval: RollingInterval.Day)

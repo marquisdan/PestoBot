@@ -19,15 +19,15 @@ namespace PestoBot
         private static void SetUpLogger()
         {
             //Get webhooks set for Discord logging
-            var config = ConfigService.BuildConfig();
-            ulong fullLogId = ulong.Parse(config.GetSection("Webhooks").GetSection("FullLog").GetSection("Id").Value);
-            var fullLogToken = config.GetSection("Webhooks").GetSection("FullLog").GetSection("Token").Value;
-            ulong warnId = ulong.Parse(config.GetSection("Webhooks").GetSection("Warn").GetSection("Id").Value);
-            var warnToken = config.GetSection("Webhooks").GetSection("Warn").GetSection("Token").Value;
-            ulong errorId = ulong.Parse(config.GetSection("Webhooks").GetSection("Error").GetSection("Id").Value);
-            var errorToken = config.GetSection("Webhooks").GetSection("Error").GetSection("Token").Value;
-            ulong debugId = ulong.Parse(config.GetSection("Webhooks").GetSection("Debug").GetSection("Id").Value);
-            var debugToken = config.GetSection("Webhooks").GetSection("Debug").GetSection("Token").Value;
+            var keys = ConfigService.BuildKeysConfig();
+            ulong fullLogId = ulong.Parse(keys.GetSection("Webhooks").GetSection("FullLog").GetSection("Id").Value);
+            var fullLogToken = keys.GetSection("Webhooks").GetSection("FullLog").GetSection("Token").Value;
+            ulong warnId = ulong.Parse(keys.GetSection("Webhooks").GetSection("Warn").GetSection("Id").Value);
+            var warnToken = keys.GetSection("Webhooks").GetSection("Warn").GetSection("Token").Value;
+            ulong errorId = ulong.Parse(keys.GetSection("Webhooks").GetSection("Error").GetSection("Id").Value);
+            var errorToken = keys.GetSection("Webhooks").GetSection("Error").GetSection("Token").Value;
+            ulong debugId = ulong.Parse(keys.GetSection("Webhooks").GetSection("Debug").GetSection("Id").Value);
+            var debugToken = keys.GetSection("Webhooks").GetSection("Debug").GetSection("Token").Value;
 
             //Instantiate and configure static logger 
             Log.Logger = new LoggerConfiguration()
