@@ -1,0 +1,37 @@
+{
+  "ConnectionStrings": {
+    "PestoDb": "Data Source=PestoBot.db;Mode=ReadWriteCreate"
+  },
+  "Emotes": {
+    "EscapedPesto": "<:Pesto:613072816367206430>",
+    "EscapedDabesto": "<:Dabesto:613080034915385344>"
+  },
+  "SpecialGuilds": {
+    "MWSF": 140652251206254592,
+    "BotSandbox": 699621364654407700
+  },
+  "BotAdminRoles": ["PestoAdmin","BotAdmin"],
+  "DefaultPrefix": "%",
+  "Webhooks": {
+    "FullLog": {
+      "Id": 1,
+      "Token": "abc"
+    },
+    "Warn": {
+      "Id": 1,
+      "Token": "abc"
+    },
+    "Error": {
+      "Id": 1,
+      "Token": "abc"
+    },
+    "Debug": {
+      "Id": 1,
+      "Token": "abc"
+    },
+    "ReminderService": {
+      "Id": 1,
+      "Token": "abc"
+    }
+  } 
+}
