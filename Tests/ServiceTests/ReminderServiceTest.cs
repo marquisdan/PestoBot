@@ -44,7 +44,7 @@ namespace PestoBot.Tests.ServiceTests
             {
                 _dueDate = _currentTime.AddMinutes((int) ReminderTimes.Task - 1);
 
-                var result = _sut.ShouldSendTaskReminder(reminder);
+                var result = _sut.ShouldSendOneTimeReminder(reminder);
 
                 Assert.That(result, Is.True, "Flags to send reminder if task due date is within window");
             }
@@ -88,7 +88,7 @@ namespace PestoBot.Tests.ServiceTests
                     Type = (int) ReminderTypes.Task,
                     LastSent = DateTime.Now.AddMinutes(-5)
                 };
-                var result = _sut.ShouldSendTaskReminder(reminder);
+                var result = _sut.ShouldSendOneTimeReminder(reminder);
 
                 Assert.That(result, Is.False, "Does not send reminder if already sent");
             }
@@ -170,7 +170,7 @@ namespace PestoBot.Tests.ServiceTests
                     Type = (int) ReminderTypes.Task
                 };
 
-                var result = _sut.GetShortTermDueDate(reminder);
+                var result = _sut.GetOneTimeReminderDueDate(reminder);
                 var expected = ((MarathonTaskAssignmentModel) _reminderAssignment).TaskStartTime;
                 Assert.That(result, Is.EqualTo(expected), "Gets correct short term due date");
             }
@@ -194,7 +194,7 @@ namespace PestoBot.Tests.ServiceTests
                 _mockSut.Setup(x => x.GetProjectForAssignment(It.IsAny<MarathonProjectAssignmentModel>()))
                     .Returns(projectModel);
                 var localSut = _mockSut.Object;
-                var result = localSut.GetLongTermDueDate(reminder);
+                var result = localSut.GetRecurringReminderDueDate(reminder);
                 
                 Assert.That(result, Is.EqualTo(dueDate));
             }

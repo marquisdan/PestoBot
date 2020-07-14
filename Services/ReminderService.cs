@@ -29,6 +29,9 @@ namespace PestoBot.Services
         internal const int TaskReminderTime = 30; //Remind tasks this many minutes before due date
         private const string LogDateFormat = "MMMM dd, yyyy HH:mm:ss tt zz";
 
+        private readonly List<ReminderTypes> _oneTimeReminderTypes;
+        private readonly List<ReminderTypes> _recurringReminderTypes;
+
         //Service injection 
         private IConfiguration _config;
         private DiscordSocketClient _client;
@@ -47,6 +50,20 @@ namespace PestoBot.Services
             // ReSharper disable VirtualMemberCallInConstructor
             InitServices(services);
             ReminderServiceLog = CreateReminderServiceLoggerConfiguration();
+
+            //Populate reminder lists
+            _oneTimeReminderTypes = new List<ReminderTypes>
+            {
+                ReminderTypes.DebugTask,
+                ReminderTypes.Run,
+                ReminderTypes.Task
+            };
+
+            _recurringReminderTypes = new List<ReminderTypes>
+            {
+                ReminderTypes.Project,
+                ReminderTypes.DebugProject
+            };
         }
 
         protected internal virtual Logger CreateReminderServiceLoggerConfiguration()
@@ -134,19 +151,12 @@ namespace PestoBot.Services
 
         internal virtual bool ShouldSendReminder(ReminderModel model)
         {
-            switch ((ReminderTypes) model.Type)
-            {
-                case ReminderTypes.Task:
-                    return ShouldSendTaskReminder(model);
-                case ReminderTypes.DebugTask:
-                    return ShouldSendRecurringReminder(model);
-                //Implement other reminder types here
-                default: return false;
-            }
-            
+            var modelType = (ReminderTypes) model.Type;
+            return _oneTimeReminderTypes.Contains(modelType) ? ShouldSendOneTimeReminder(model)
+                : _recurringReminderTypes.Contains(modelType) && ShouldSendRecurringReminder(model);
         }
 
-        protected internal virtual bool ShouldSendTaskReminder(ReminderModel model)
+        protected internal virtual bool ShouldSendOneTimeReminder(ReminderModel model)
         {
             if (model.LastSent != DateTime.MinValue) return false; //Do not send reminder if it has already been sent
 
@@ -169,18 +179,19 @@ namespace PestoBot.Services
 
         protected internal virtual DateTime GetDueDate(ReminderModel model)
         {
-            switch ((ReminderTypes) model.Type) {
-                case ReminderTypes.Task:
-                    return GetShortTermDueDate(model);
-                case ReminderTypes.Project:
-                    return GetLongTermDueDate(model);
-                case ReminderTypes.Run:
-                    return GetShortTermDueDate(model);
-                case ReminderTypes.DebugTask:
-                    throw new NotImplementedException();
-                default:
-                    throw new NotImplementedException();
+            var modelType = (ReminderTypes)model.Type;
+
+            if (_oneTimeReminderTypes.Contains(modelType))
+            {
+                return GetOneTimeReminderDueDate(model);
             }
+
+            if (_recurringReminderTypes.Contains(modelType))
+            {
+                return GetRecurringReminderDueDate(model);
+            }
+            
+            throw new ArgumentException("Reminder does not have a valid type");
         }
 
         /// <summary>
@@ -189,7 +200,7 @@ namespace PestoBot.Services
         /// e.g. Tell a runner to get ready 30m before a run
         /// </summary>
         /// <returns></returns>
-        protected internal DateTime GetShortTermDueDate(ReminderModel model)
+        protected internal DateTime GetOneTimeReminderDueDate(ReminderModel model)
         {
             var assignment = GetAssignmentForReminder(model) as MarathonTaskAssignmentModel;
             return assignment?.TaskStartTime ?? DateTime.MinValue;
@@ -202,7 +213,7 @@ namespace PestoBot.Services
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        protected internal DateTime GetLongTermDueDate(ReminderModel model)
+        protected internal DateTime GetRecurringReminderDueDate(ReminderModel model)
         {
             var assignment = GetAssignmentForReminder(model) as MarathonProjectAssignmentModel;
             var project = GetProjectForAssignment(assignment);
