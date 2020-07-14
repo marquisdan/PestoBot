@@ -45,7 +45,8 @@ namespace PestoBot.Services
 
         //Times for specific reminder types
 
-        private Timer reminderTimer;
+        // ReSharper disable once NotAccessedField.Local
+        private Timer _reminderTimer;
         private readonly ILogger ReminderServiceLog; //separate log to filter out Reminder Service events 
 
         public ReminderService(IServiceProvider services)
@@ -80,7 +81,7 @@ namespace PestoBot.Services
 
         public void Start()
         {
-            reminderTimer = new Timer(WakeReminderService, null, 0, Minute * 5);
+            _reminderTimer = new Timer(WakeReminderService, null, 0, Minute * 5);
             //reminderTimer = new Timer(WakeReminderService, null, 0, 5000); //5 second sleep period for debugging/Testing
         }
 
@@ -144,6 +145,8 @@ namespace PestoBot.Services
             {
                 case ReminderTypes.Task:
                     return ShouldSendTaskReminder(model);
+                case ReminderTypes.Debug:
+                    return ShouldSendRecurringReminder(model);
                 //Implement other reminder types here
                 default: return false;
             }
@@ -164,6 +167,11 @@ namespace PestoBot.Services
             }
             //Finally, determine if within reminder window and return result
             return timeSpan <= TimeSpan.FromMinutes((int) ReminderTimes.Task); 
+        }
+
+        protected internal virtual bool ShouldSendRecurringReminder(ReminderModel model)
+        {
+            return false;
         }
 
         protected internal virtual DateTime GetDueDate(ReminderModel model)

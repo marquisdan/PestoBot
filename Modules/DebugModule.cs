@@ -1,13 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using NUnit.Framework;
 using PestoBot.Common;
 using PestoBot.Common.CustomPreconditions;
+using PestoBot.Database.Models.Common;
 using PestoBot.Database.Models.DebugModel;
+using PestoBot.Database.Repositories.Common;
 using PestoBot.Database.Repositories.DebugRepo;
 using PestoBot.Database.Repositories.Guild;
 using Serilog;
@@ -90,16 +94,6 @@ namespace PestoBot.Modules
         }
 
         [RequireOwner]
-        [Command("DeleteAllDatabaseData")]
-        [Alias("ClearDatatbase")]
-        [Summary("Don't do this")]
-        public async Task DeleteAllDatabaseData()
-        {
-            var repo = new DebugRepository();
-            await repo.DeleteAllDatabaseData();
-        }
-
-        [RequireOwner]
         [Command("SendPM")]
         [Summary("Sends a private message to a user")]
         public async Task SendPMToUser(ulong userId, string msg)
@@ -126,6 +120,59 @@ namespace PestoBot.Modules
         public async Task GetPing()
         {
             await ReplyAsync("Pong! 🏓 **" + ((DiscordSocketClient) Context.Client).Latency + "ms**");
+        }
+
+        [RequireOwner]
+        [Command("InitGlobals")]
+        [Alias("InitGlobalSettings")]
+        public async Task InitGlobalSettings()
+        {
+            await ReplyAsync(GlobalSettings.InitGlobalSettings()
+                ? "Settings initialized successfully"
+                : "Global settings already initialized. Can't initialize em anymore");
+        }
+
+        [RequireOwner]
+        [Command("GetGlobalSettings")]
+        [Alias("GlobalSettings", "ListGlobalSettings", "Globals")]
+        [Summary("Get global settings")]
+        public async Task GetGlobalSettings()
+        {
+            var settings = GlobalSettings.GetGlobalSettings();
+            var eb = new EmbedBuilder()
+            {
+                Color = Color.Green,
+                Title = "Global Settings",
+                Description = "Global Settings for PestoBot"
+            };
+
+            foreach (var property in settings.GetType().GetProperties())
+            {
+                if (property.Name != "Id")
+                {
+                    eb.AddField(property.Name, property.GetValue(settings), true);
+                }
+            }
+
+            await ReplyAsync(null, false, eb.Build());
+        }
+
+        [RequireOwner]
+        [Command("SetDebugReminders")]
+        [Alias("EnableDebugReminders", "DebugReminders")]
+        [Summary("Enable or Disable Debug Reminders")]
+        public async Task SetDebugReminders(string enabled = "")
+        {
+            if (new List<string>{"true", "1", "on", "false", "0", "off"}.Contains(enabled.ToLower()))
+            {
+                bool enabledSetting = enabled.ToLower() == "true" || enabled == "1" || enabled.ToLower() == "on";
+                var model = new GlobalSettingsModel{DebugRemindersEnabled =  enabledSetting};
+                await GlobalSettings.SetGlobalSettings(model);
+                await ReplyAsync(TextUtils.GetInfoText($"Setting Debug reminders to {enabledSetting}"));
+            }
+
+            var currentVal = GlobalSettings.AreDebugRemindersEnabled().ToString();
+            await ReplyAsync(TextUtils.GetInfoText($"Debug reminder value is: {currentVal}"));
         }
 
         //[Command("EnableGooby")]
