@@ -19,13 +19,6 @@ using ILogger = Serilog.ILogger;
 
 namespace PestoBot.Services
 {
-    public enum ReminderTimes
-    {
-        Task = 30, //Fire task reminders 30m in advance
-        Project = 17, //Fire daily reminders at 5pm
-        GoobyTime = 20 //Fire Gooby reminder at 8pm
-    }
-
     public class ReminderService
     {
         private ulong reminderServiceId;
@@ -105,7 +98,7 @@ namespace PestoBot.Services
             if (IsTimeToProcessReminders(ReminderTimes.GoobyTime))
             {
                 ReminderServiceLog.Information("Processing Debug Reminders");
-                ProcessReminders(ReminderTypes.Debug);
+                ProcessReminders(ReminderTypes.DebugTask);
             }
         }
 
@@ -145,7 +138,7 @@ namespace PestoBot.Services
             {
                 case ReminderTypes.Task:
                     return ShouldSendTaskReminder(model);
-                case ReminderTypes.Debug:
+                case ReminderTypes.DebugTask:
                     return ShouldSendRecurringReminder(model);
                 //Implement other reminder types here
                 default: return false;
@@ -183,7 +176,7 @@ namespace PestoBot.Services
                     return GetLongTermDueDate(model);
                 case ReminderTypes.Run:
                     return GetShortTermDueDate(model);
-                case ReminderTypes.Debug:
+                case ReminderTypes.DebugTask:
                     throw new NotImplementedException();
                 default:
                     throw new NotImplementedException();

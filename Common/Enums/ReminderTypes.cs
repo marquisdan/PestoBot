@@ -6,7 +6,8 @@ namespace PestoBot.Common
 {
     public enum ReminderTypes
     {
-        Debug = -1,
+        DebugProject = -2,
+        DebugTask = -1,
         Project = 0,
         Task = 1,
         Run = 2
