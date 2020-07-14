@@ -145,10 +145,8 @@ namespace PestoBot.Database.Repositories.Common
             //Add each property as a column name (we don't want to use Id if it auto increments)
             properties.ForEach(property =>
             {
-                if (!(property.ToLower().Equals("id") && AutoIncrementId)) //in theory this should always be "Id" but I am using .tolower() to be safe
-                {
-                    insertQuery.Append($"[{property}],");
-                }
+                if (property.ToLower().Equals("id") && AutoIncrementId) return;
+                insertQuery.Append($"[{property}],");
             });
 
             //replace last open paren with closed one
@@ -159,7 +157,7 @@ namespace PestoBot.Database.Repositories.Common
             //Add each value individually as a variable
             properties.ForEach(property =>
             {
-                if (!(property.ToLower().Equals("id") && AutoIncrementId)) // Again, skip Id if it is auto incremented
+                if (property.ToLower().Equals("id") && AutoIncrementId)// Again, skip Id if it is auto incremented
                 {
                     insertQuery.Append($"@{property},");
                 }
@@ -180,10 +178,11 @@ namespace PestoBot.Database.Repositories.Common
 
             var properties = GenerateListOfProperties(GetProperties);
 
-            //Iterate each property except ID (since we use that to find the row and do not want to change it
+            //Iterate each property except ID (since we use that to find the row and do not want to change it)
+            //Also do not update created row
             properties.ForEach(property =>
             {
-                if (!property.ToLower().Equals("id"))
+                if (!property.ToLower().Equals("id") && !property.ToLower().Equals("created"))
                 {
                     updateQuery.Append($"{property}=@{property},");
                 }
