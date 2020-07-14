@@ -37,6 +37,15 @@ namespace PestoBot.Common
             return sb.ToString();
         }
 
+        public static string GetInfoText(string msg)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("```md");
+            sb.AppendLine($"# {msg}");
+            sb.AppendLine("```");
+            return sb.ToString();
+        }
+
         public static string GetHighlightedFields(IEnumerable<string> fields)
         {
             return $"`{fields.Aggregate((a, x) => a + "`  `" + x)}`";
