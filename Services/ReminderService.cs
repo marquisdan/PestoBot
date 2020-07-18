@@ -39,17 +39,15 @@ namespace PestoBot.Services
         private Microsoft.Extensions.Logging.ILogger _logger;
         private IServiceProvider _serviceProvider;
 
-        //Times for specific reminder types
-
         // ReSharper disable once NotAccessedField.Local
         private Timer _reminderTimer;
-        private readonly ILogger ReminderServiceLog; //separate log to filter out Reminder Service events 
+        private readonly ILogger _reminderServiceLog; //separate log to filter out Reminder Service events 
 
         public ReminderService(IServiceProvider services)
         {
             // ReSharper disable VirtualMemberCallInConstructor
             InitServices(services);
-            ReminderServiceLog = CreateReminderServiceLoggerConfiguration();
+            _reminderServiceLog = CreateReminderServiceLoggerConfiguration();
 
             //Populate reminder lists
             _oneTimeReminderTypes = new List<ReminderTypes>
@@ -97,24 +95,24 @@ namespace PestoBot.Services
 
         internal void WakeReminderService(object state)
         {
-            ReminderServiceLog.Information($"{DateTime.Now.ToString(LogDateFormat)} : Waking Reminder Service");
+            _reminderServiceLog.Information($"{DateTime.Now.ToString(LogDateFormat)} : Waking Reminder Service");
             FireRemindersByType();
-            ReminderServiceLog.Information($"{DateTime.Now.ToString(LogDateFormat)} : Reminder Service Sleeping");
+            _reminderServiceLog.Information($"{DateTime.Now.ToString(LogDateFormat)} : Reminder Service Sleeping");
         }
 
         protected internal void FireRemindersByType()
         {
-            ReminderServiceLog.Information($"Processing tasks");
+            _reminderServiceLog.Information($"Processing tasks");
             ProcessReminders(ReminderTypes.Task);
             if (IsTimeToProcessReminders(ReminderTimes.Project))
             {
-                ReminderServiceLog.Information("Processing Project Reminders");
+                _reminderServiceLog.Information("Processing Project Reminders");
                 ProcessReminders(ReminderTypes.Project);
             }
 
             if (IsTimeToProcessReminders(ReminderTimes.GoobyTime))
             {
-                ReminderServiceLog.Information("Processing Debug Reminders");
+                _reminderServiceLog.Information("Processing Debug Reminders");
                 ProcessReminders(ReminderTypes.DebugTask);
             }
         }
@@ -129,7 +127,7 @@ namespace PestoBot.Services
         {
             if (type == ReminderTypes.Project)
             {
-                ReminderServiceLog.Warning("Project reminders are disabled until design refactor is complete");
+                _reminderServiceLog.Warning("Project reminders are disabled until design refactor is complete");
                 return;
             }
             //Get list of reminders
@@ -205,7 +203,6 @@ namespace PestoBot.Services
             var assignment = GetAssignmentForReminder(model) as MarathonTaskAssignmentModel;
             return assignment?.TaskStartTime ?? DateTime.MinValue;
         }
-
 
         /// <summary>
         /// Returns a long term due date for Projects that may span multiple marathons or may not be tied to a specific marathon.

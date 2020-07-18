@@ -11,9 +11,11 @@ using PestoBot.Common;
 using PestoBot.Common.CustomPreconditions;
 using PestoBot.Database.Models.Common;
 using PestoBot.Database.Models.DebugModel;
+using PestoBot.Database.Models.SpeedrunEvent;
 using PestoBot.Database.Repositories.Common;
 using PestoBot.Database.Repositories.DebugRepo;
 using PestoBot.Database.Repositories.Guild;
+using PestoBot.Entity.Common;
 using Serilog;
 
 namespace PestoBot.Modules
@@ -122,6 +124,7 @@ namespace PestoBot.Modules
             await ReplyAsync("Pong! 🏓 **" + ((DiscordSocketClient) Context.Client).Latency + "ms**");
         }
 
+        #region GlobalSettings
         [RequireOwner]
         [Command("InitGlobals")]
         [Alias("InitGlobalSettings")]
@@ -131,7 +134,7 @@ namespace PestoBot.Modules
                 ? "Settings initialized successfully"
                 : "Global settings already initialized. Can't initialize em anymore");
         }
-
+        
         [RequireOwner]
         [Command("GetGlobalSettings")]
         [Alias("GlobalSettings", "ListGlobalSettings", "Globals")]
@@ -173,6 +176,57 @@ namespace PestoBot.Modules
 
             var currentVal = GlobalSettings.AreDebugRemindersEnabled().ToString();
             await ReplyAsync(TextUtils.GetInfoText($"Debug reminder value is: {currentVal}"));
+        }
+
+        #endregion
+
+        [Command("AddRecurringDebugReminder")]
+        [RequireBotAdmin]
+        [Summary("Set a recurring debug reminder")]
+        public async Task AddRecurringDebugReminder(string msg, string targetUser)
+        {
+            var model = new ReminderModel
+            {
+                Id = 0,
+                Created = DateTime.Now,
+                Modified = DateTime.Now,
+                LastSent = default,
+                Content = msg,
+                Interval = 0,
+                Type = (int) ReminderTypes.DebugProject,
+                AssignmentId = 0,
+                UserId = 0,
+                GuildId = 0
+            };
+        }
+
+        [Command("AddOneTimeDebugReminder")]
+        [RequireBotAdmin]
+        [Summary("Set a one time debug reminder")]
+        public async Task AddOneTimeDebugReminder(string msg, string targetUser)
+        {
+            var reminder = new Reminder
+            {
+                Content = null,
+                Interval = 0,
+                Type = ReminderTypes.Project
+            };
+            
+
+            var model = new ReminderModel
+            {
+                Id = 0,
+                Created = default,
+                Modified = default,
+                LastSent = default,
+                Content = null,
+                Interval = 0,
+                Type = 0,
+                AssignmentId = 0,
+                UserId = 0,
+                GuildId = 0
+            };
+
         }
 
         //[Command("EnableGooby")]

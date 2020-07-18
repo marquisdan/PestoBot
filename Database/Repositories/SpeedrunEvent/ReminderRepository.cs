@@ -41,19 +41,21 @@ namespace PestoBot.Database.Repositories.SpeedrunEvent
                 DynamicParameters dynamicParams;
                 IPestoModel data;
 
-                switch ((ReminderTypes)model.Type)
+                switch ((ReminderTypes) model.Type)
                 {
                     case ReminderTypes.Task:
                         tableName = "MarathonTaskAssignment";
                         query = $"Select * from {tableName} where Id = @id";
-                        dynamicParams = new DynamicParameters(new MarathonTaskAssignmentModel { Id = model.AssignmentId });
+                        dynamicParams = new DynamicParameters(new MarathonTaskAssignmentModel
+                            {Id = model.AssignmentId});
                         data = await db.QueryFirstAsync<MarathonTaskAssignmentModel>(query, dynamicParams);
                         return (MarathonTaskAssignmentModel) data;
 
                     case ReminderTypes.Project:
                         tableName = "MarathonTableAssignment";
                         query = $"Select * from {tableName} where Id = @id";
-                        dynamicParams = new DynamicParameters(new MarathonProjectAssignmentModel { Id = model.AssignmentId });
+                        dynamicParams = new DynamicParameters(new MarathonProjectAssignmentModel
+                            {Id = model.AssignmentId});
                         data = await db.QueryFirstAsync<MarathonProjectAssignmentModel>(query, dynamicParams);
                         return (MarathonProjectAssignmentModel) data;
                     default: throw new ArgumentException($"No assignment for this type of reminder: {model.Type}");
