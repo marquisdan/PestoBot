@@ -11,11 +11,10 @@ using PestoBot.Common;
 using PestoBot.Common.CustomPreconditions;
 using PestoBot.Database.Models.Common;
 using PestoBot.Database.Models.DebugModel;
-using PestoBot.Database.Models.SpeedrunEvent;
-using PestoBot.Database.Repositories.Common;
 using PestoBot.Database.Repositories.DebugRepo;
 using PestoBot.Database.Repositories.Guild;
-using PestoBot.Entity.Common;
+using PestoBot.Database.Repositories.SpeedrunEvent;
+using PestoBot.Entity;
 using Serilog;
 
 namespace PestoBot.Modules
@@ -185,49 +184,32 @@ namespace PestoBot.Modules
         [Summary("Set a recurring debug reminder")]
         public async Task AddRecurringDebugReminder(string msg, string targetUser)
         {
-            var model = new ReminderModel
-            {
-                Id = 0,
-                Created = DateTime.Now,
-                Modified = DateTime.Now,
-                LastSent = default,
-                Content = msg,
-                Interval = 0,
-                Type = (int) ReminderTypes.DebugProject,
-                AssignmentId = 0,
-                UserId = 0,
-                GuildId = 0
-            };
+       
         }
 
         [Command("AddOneTimeDebugReminder")]
         [RequireBotAdmin]
         [Summary("Set a one time debug reminder")]
-        public async Task AddOneTimeDebugReminder(string msg, string targetUser)
+        public async Task AddOneTimeDebugReminder(string msg, string targetUser, string evnt = "")
         {
+            var validUser = ulong.TryParse(targetUser, out var userId);
+            if (validUser == false)
+            {
+                await ReplyAsync($"{targetUser} is not a valid userId");
+                return;
+            }
+
+            var user = new User(userId);
+            var evntToAssign = new EventRepository().GetNextEventForGuild(Context.Guild.Id);
+
             var reminder = new Reminder
             {
-                Content = null,
-                Interval = 0,
-                Type = ReminderTypes.Project
+                Content = msg,
+                Type = ReminderTypes.DebugTask,
+                AssignedUser = user
             };
-            
-
-            var model = new ReminderModel
-            {
-                Id = 0,
-                Created = default,
-                Modified = default,
-                LastSent = default,
-                Content = null,
-                Interval = 0,
-                Type = 0,
-                AssignmentId = 0,
-                UserId = 0,
-                GuildId = 0
-            };
-
         }
+
 
         //[Command("EnableGooby")]
         //[RequireBotAdmin]
