@@ -1,6 +1,8 @@
-﻿namespace PestoBot.Entity.Common
+﻿using PestoBot.Api.Common;
+
+namespace PestoBot.Entity.Common
 {
-    interface IPestoEntity<T>
+    public interface IPestoEntity<T>
     {
         void Load(ulong id);
         void Save();

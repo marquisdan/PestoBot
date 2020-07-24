@@ -2,7 +2,9 @@
 using Discord;
 using Discord.WebSocket;
 using PestoBot.Api;
+using PestoBot.Api.Common;
 using PestoBot.Common;
+using PestoBot.Database.Models.Common;
 using PestoBot.Database.Models.SpeedrunEvent;
 using PestoBot.Entity.Common;
 
@@ -10,11 +12,20 @@ namespace PestoBot.Entity
 {
     public class Reminder : AbstractPestoEntity<ReminderModel>
     {
+
+        private readonly ReminderApi _api;
+        private User _assignedUser;
+        private MarathonTaskAssignment _marathonTaskAssignment;
+
+        #region Public Properties
+
         public string Content
         {
             get => Model.Content;
             set => Model.Content = value;
         }
+
+        public DateTime LastSent => Model.LastSent;
 
         public int Interval
         {
@@ -28,29 +39,38 @@ namespace PestoBot.Entity
             set => Model.Type = (int) value;
         }
 
+        public ulong AssignmentId { get; set; }
+
         public User AssignedUser
         {
             get => _assignedUser;
-            set { _assignedUser = value;
-                Model.UserId = _assignedUser.Id;
-            }
+            set => SetUser(value);
         }
 
-        private User _assignedUser;
-        //public Assignment assignment {get;}
-        //public Guild guild { get; }
+        public ulong GuildId
+        {
+            get => Model.GuildId;
+            private set => Model.GuildId = value;
+        }
+
+        #endregion
 
         public Reminder()
         {
-            Api = new ReminderApi<ReminderModel>();
+            _api = new ReminderApi();
             Model = new ReminderModel();
         }
 
         public Reminder(ulong id)
         {
-            Api = new ReminderApi<ReminderModel>();
-            Model = Api.Load(id);
+            _api = new ReminderApi();
+            Model = _api.Load(id);
             Content = Model.Content;
+        }
+
+        protected override IPestoApi<ReminderModel> GetApi()
+        {
+            return _api;
         }
 
         public void SetUser(User user)
@@ -58,6 +78,7 @@ namespace PestoBot.Entity
             if (IsUserAssignable())
             {
                 _assignedUser = user;
+                Model.UserId = _assignedUser.Id;
                 return;
             }
             throw new ArgumentException("User not assignable or does not exist");
@@ -68,15 +89,12 @@ namespace PestoBot.Entity
             throw new NotImplementedException();
         }
 
-        public DateTime GetLastSent()
-        {
-            return Model.LastSent;
-        }
-
         public async void Send(DiscordSocketClient client, ulong channelId)
         {
             var connectionLogChannel = (IMessageChannel)client.GetChannel(channelId);
             await connectionLogChannel.SendMessageAsync(Model.Content);
+            Model.LastSent = DateTime.Now;
+            Save();
         }
     }
 }

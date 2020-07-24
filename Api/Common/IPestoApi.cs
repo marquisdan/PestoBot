@@ -1,4 +1,6 @@
-﻿using PestoBot.Database.Models.Common;
+﻿using System.Threading.Tasks;
+using PestoBot.Database.Models.Common;
+using PestoBot.Database.Repositories.Common;
 
 namespace PestoBot.Api.Common
 {
@@ -6,6 +8,6 @@ namespace PestoBot.Api.Common
     public interface IPestoApi<T>
     {
         T Load(ulong id);
-        void Save(IPestoModel model);
+        Task Save(T model);
     }
 }

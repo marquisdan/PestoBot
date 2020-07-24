@@ -3,7 +3,7 @@ using PestoBot.Database.Models.Common;
 
 namespace PestoBot.Database.Models.SpeedrunEvent
 {
-    public class MarathonProjectAssignmentModel : AbstractPestoModel
+    public class MarathonProjectAssignmentModel : AbstractAssignmentModel
     {
         public ulong GuildId { get; set; }
         public ulong UserId { get; set; }

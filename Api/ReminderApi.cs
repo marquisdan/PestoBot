@@ -4,27 +4,40 @@ using System.Text;
 using PestoBot.Api.Common;
 using PestoBot.Database.Models.Common;
 using PestoBot.Database.Models.SpeedrunEvent;
+using PestoBot.Database.Repositories.Common;
 using PestoBot.Database.Repositories.SpeedrunEvent;
 
 namespace PestoBot.Api
 {
-    class ReminderApi<T> : AbstractPestoApi<ReminderModel>
+    class ReminderApi : AbstractPestoApi<ReminderModel>
     {
-        private ReminderModel Model; 
+        private ReminderModel _model;
+        private readonly ReminderRepository _repo;
         public ReminderApi()
         {
-            Model = new ReminderModel()
+            _model = new ReminderModel()
             {
                 Created = DateTime.Now
             };
-            Repo = new ReminderRepository();
+            _repo = new ReminderRepository();
         }
 
         public ReminderApi(ReminderModel model)
         {
-            Model = model;
-            Repo = new ReminderRepository();
+            _model = model;
+            _repo = new ReminderRepository();
         }
+
+        protected override IPestoRepository<ReminderModel> GetRepo()
+        {
+            return _repo;
+        }
+
+        public override ReminderModel Load(ulong id)
+        {
+            return base.Load(_repo, id);
+        }
+
 
         //Get Event
 
