@@ -5,8 +5,6 @@ namespace PestoBot.Database.Models.Guild
 {
     class GuildModel : AbstractPestoModel
     {
-        public DateTime Created { get; set; }
-        public DateTime Modified { get; set; }
         public DateTime JoinDate { get; set; }
         public string Name { get; set; }
         public string OwnerUsername { get; set; }

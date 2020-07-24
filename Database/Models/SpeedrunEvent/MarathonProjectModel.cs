@@ -5,8 +5,6 @@ namespace PestoBot.Database.Models.SpeedrunEvent
 {
     public class MarathonProjectModel : AbstractPestoModel
     {
-        public DateTime Created { get; set; }
-        public DateTime Modified { get; set; }
         public ulong GuildId { get; set; }
         public ulong EventAssignmentId { get; set; }
         public string Name { get; set; }

@@ -5,8 +5,6 @@ namespace PestoBot.Database.Models.Guild
 {
     class GuildSettingsModel : AbstractPestoModel
     {
-        public DateTime Created { get; set; }
-        public DateTime Modified { get; set; }
         public string Prefix { get; set; }
         public ulong ProjectReminderChannel { get; set; }
         public ulong TaskReminderChannel { get; set; }
