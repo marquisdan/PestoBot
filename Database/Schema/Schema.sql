@@ -1,5 +1,5 @@
 --
--- File generated with SQLiteStudio v3.2.1 on Thu Jul 9 15:38:53 2020
+-- File generated with SQLiteStudio v3.2.1 on Tue Jul 28 10:11:44 2020
 --
 -- Text encoding used: System
 --
@@ -38,6 +38,39 @@ CREATE TABLE Event (
     CreatorId         BIGINT,
     CreatorUsername   STRING,
     GuildId           BIGINT   REFERENCES Guild (Id) 
+);
+
+
+-- Table: EventAssignment
+DROP TABLE IF EXISTS EventAssignment;
+
+CREATE TABLE EventAssignment (
+    Id               INTEGER  PRIMARY KEY AUTOINCREMENT,
+    Created          DATETIME,
+    Modified         DATETIME,
+    AssignmentType   INTEGER,
+    ProjectDueDate   DATETIME,
+    TaskStartTime    DATETIME,
+    ReminderText     TEXT,
+    LastReminderSent DATETIME,
+    ProjectTaskId    BIGINT,
+    GuildId          BIGINT   REFERENCES Guild (Id),
+    UserId           BIGINT   REFERENCES User (Id),
+    EventId          BIGINT   REFERENCES Event (Id) 
+);
+
+
+-- Table: EventTask
+DROP TABLE IF EXISTS EventTask;
+
+CREATE TABLE EventTask (
+    Id          INTEGER  PRIMARY KEY AUTOINCREMENT,
+    Created     DATETIME,
+    Modified    DATETIME,
+    Name        STRING,
+    Description STRING,
+    GuildId     BIGINT   REFERENCES Guild (Id),
+    EventId     INTEGER  REFERENCES Event (Id) 
 );
 
 
@@ -99,85 +132,6 @@ CREATE TABLE GuildSettings (
     RunnerReminderChannel  BIGINT,
     DebugReminderChannel   BIGINT,
     GuildId                BIGINT   REFERENCES Guild (Id) 
-);
-
-
--- Table: MarathonProject
-DROP TABLE IF EXISTS MarathonProject;
-
-CREATE TABLE MarathonProject (
-    Id               INTEGER  PRIMARY KEY AUTOINCREMENT,
-    Created          DATETIME,
-    Modified         DATETIME,
-    GuildId          BIGINT   REFERENCES Guild (Id),
-    EventId          INTEGER  REFERENCES EventVolunteerAssignment (Id),
-    Name             STRING,
-    Description      STRING,
-    DueDate          DATETIME,
-    ReminderText     STRING,
-    LastReminderSent DATETIME,
-    ReminderInterval INTEGER
-);
-
-
--- Table: MarathonProjectAssignment
-DROP TABLE IF EXISTS MarathonProjectAssignment;
-
-CREATE TABLE MarathonProjectAssignment (
-    Id                INTEGER  PRIMARY KEY AUTOINCREMENT,
-    Created           DATETIME,
-    Modified          DATETIME,
-    GuildId           BIGINT   REFERENCES Guild (Id),
-    UserId            BIGINT   REFERENCES User (Id),
-    MarathonProjectId INTEGER  REFERENCES MarathonProject (Id) 
-);
-
-
--- Table: MarathonTask
-DROP TABLE IF EXISTS MarathonTask;
-
-CREATE TABLE MarathonTask (
-    Id          INTEGER  PRIMARY KEY AUTOINCREMENT,
-    Created     DATETIME,
-    Modified    DATETIME,
-    Name        STRING,
-    Description STRING,
-    GuildId     BIGINT   REFERENCES Guild (Id),
-    EventId     INTEGER  REFERENCES Event (Id) 
-);
-
-
--- Table: MarathonTaskAssignment
-DROP TABLE IF EXISTS MarathonTaskAssignment;
-
-CREATE TABLE MarathonTaskAssignment (
-    Id             INTEGER  PRIMARY KEY AUTOINCREMENT,
-    Created        DATETIME,
-    Modified       DATETIME,
-    TaskStartTime  DATETIME,
-    GuildId        BIGINT   REFERENCES Guild (Id),
-    UserId         BIGINT   REFERENCES User (Id),
-    MarathonTaskId INTEGER  REFERENCES MarathonTask (Id) 
-);
-
-
--- Table: Reminder
-DROP TABLE IF EXISTS Reminder;
-
-CREATE TABLE Reminder (
-    Id           INTEGER  PRIMARY KEY AUTOINCREMENT
-                          UNIQUE
-                          NOT NULL,
-    Created      DATETIME,
-    Modified     DATETIME,
-    LastSent     DATETIME,
-    Content      TEXT,
-    Interval     INTEGER  NOT NULL,
-    Type         INTEGER  DEFAULT (0) 
-                          NOT NULL,
-    AssignmentId BIGINT   UNIQUE,
-    UserId       BIGINT   REFERENCES User (Id),
-    GuildId      BIGINT   REFERENCES Guild (Id) 
 );
 
 
