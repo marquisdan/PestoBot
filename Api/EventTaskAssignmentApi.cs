@@ -29,7 +29,8 @@ namespace PestoBot.Api.Common
 
         internal static List<EventTaskAssignmentModel> GetAllAssignmentsByType(ReminderTypes type)
         {
-            throw new NotImplementedException();
+            //TODO Not implemented yet
+            return new List<EventTaskAssignmentModel>();
         }
     }
 }
