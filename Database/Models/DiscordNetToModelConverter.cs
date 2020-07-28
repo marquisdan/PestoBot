@@ -1,7 +1,6 @@
 ﻿using System;
 using Discord.WebSocket;
 using PestoBot.Database.Models.Guild;
-using PestoBot.Database.Repositories.Guild;
 
 namespace PestoBot.Database.Models
 {

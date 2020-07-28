@@ -1,15 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net.Sockets;
-using System.Windows.Input;
-using Castle.Core.Internal;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NUnit.Framework;
-using NUnit.Framework.Internal;
 using PestoBot.Common.CustomPreconditions;
 using PestoBot.Services;
 

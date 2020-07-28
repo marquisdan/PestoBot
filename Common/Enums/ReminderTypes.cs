@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace PestoBot.Common
+﻿namespace PestoBot.Common
 {
     public enum ReminderTypes
     {

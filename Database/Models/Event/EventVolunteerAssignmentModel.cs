@@ -1,5 +1,4 @@
-﻿using System;
-using PestoBot.Database.Models.Common;
+﻿using PestoBot.Database.Models.Common;
 
 namespace PestoBot.Database.Models.SpeedrunEvent
 {

@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using PestoBot.Common;
 using PestoBot.Common.CustomPreconditions;
 using PestoBot.Database.Models.SpeedrunEvent;
-using PestoBot.Database.Repositories;
 using PestoBot.Database.Repositories.SpeedrunEvent;
 
 namespace PestoBot.Modules

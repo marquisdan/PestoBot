@@ -6,7 +6,6 @@ using Discord;
 using Discord.Commands;
 using PestoBot.Common;
 using PestoBot.Database.Models.SpeedrunEvent;
-using PestoBot.Database.Repositories;
 using PestoBot.Database.Repositories.Guild;
 using PestoBot.Database.Repositories.SpeedrunEvent;
 using PestoBot.Services;

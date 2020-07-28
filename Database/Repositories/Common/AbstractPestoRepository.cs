@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Configuration;
 using System.Data;
 using Microsoft.Data.Sqlite;
 using System.Linq;
@@ -10,10 +9,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using PestoBot.Database.Models.Common;
 using PestoBot.Services;
-using Serilog;
 
 namespace PestoBot.Database.Repositories.Common
 {

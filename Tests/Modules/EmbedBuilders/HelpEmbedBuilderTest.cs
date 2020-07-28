@@ -1,13 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
-using Moq;
-using NUnit.Framework;
-using PestoBot.Modules;
-using PestoBot.Modules.EmbedBuilders;
-
-namespace PestoBot.Tests.Modules
+﻿namespace PestoBot.Tests.Modules
 {
     class HelpEmbedBuilderTest
     {

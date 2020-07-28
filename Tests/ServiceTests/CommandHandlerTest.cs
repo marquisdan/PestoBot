@@ -1,5 +1,4 @@
 ﻿using System;
-using Castle.Core.Configuration;
 using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;

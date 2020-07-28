@@ -8,7 +8,6 @@ using PestoBot.Database.Models;
 using PestoBot.Database.Repositories.Guild;
 using PestoBot.Services;
 using Serilog;
-using Microsoft.Extensions.Configuration;
 
 
 namespace PestoBot

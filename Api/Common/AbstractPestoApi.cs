@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using PestoBot.Database.Models.Common;
 using PestoBot.Database.Repositories.Common;
-using PestoBot.Entity;
 using PestoBot.Services;
 
 namespace PestoBot.Api.Common

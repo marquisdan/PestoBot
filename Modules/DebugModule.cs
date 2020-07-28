@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using NUnit.Framework;
 using PestoBot.Common;
 using PestoBot.Common.CustomPreconditions;
 using PestoBot.Database.Models.Common;
@@ -202,7 +201,7 @@ namespace PestoBot.Modules
             var user = new User(userId);
             var evntToAssign = new EventRepository().GetNextEventForGuild(Context.Guild.Id);
 
-            var reminder = new Reminder
+            var reminder = new EventTaskAssignment
             {
                 Content = msg,
                 Type = ReminderTypes.DebugTask,

@@ -1,6 +1,4 @@
-﻿using PestoBot.Api.Common;
-
-namespace PestoBot.Entity.Common
+﻿namespace PestoBot.Entity.Common
 {
     public interface IPestoEntity<T>
     {

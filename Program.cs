@@ -1,5 +1,4 @@
-﻿using System;
-using PestoBot.Common;
+﻿using PestoBot.Common;
 using PestoBot.Services;
 using Serilog;
 using Serilog.Events;

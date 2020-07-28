@@ -1,42 +1,33 @@
 ﻿using System;
 using Discord;
 using Discord.WebSocket;
-using PestoBot.Api;
 using PestoBot.Api.Common;
 using PestoBot.Common;
-using PestoBot.Database.Models.Common;
 using PestoBot.Database.Models.SpeedrunEvent;
 using PestoBot.Entity.Common;
 
 namespace PestoBot.Entity
 {
-    public class Reminder : AbstractPestoEntity<ReminderModel>
+    public class EventTaskAssignment : AbstractPestoEntity<EventTaskAssignmentModel>
     {
 
-        private readonly ReminderApi _api;
+        private readonly EventTaskAssignmentApi _api;
         private User _assignedUser;
-        private MarathonTaskAssignment _marathonTaskAssignment;
 
         #region Public Properties
 
         public string Content
         {
-            get => Model.Content;
-            set => Model.Content = value;
+            get => Model.ReminderText;
+            set => Model.ReminderText = value;
         }
 
-        public DateTime LastSent => Model.LastSent;
-
-        public int Interval
-        {
-            get => Model.Interval;
-            set => Model.Interval = value;
-        }
+        public DateTime LastSent => Model.LastReminderSent;
 
         public ReminderTypes Type
         {
-            get => (ReminderTypes) Model.Type;
-            set => Model.Type = (int) value;
+            get => (ReminderTypes) Model.AssignmentType;
+            set => Model.AssignmentType = (int) value;
         }
 
         public ulong AssignmentId { get; set; }
@@ -55,20 +46,20 @@ namespace PestoBot.Entity
 
         #endregion
 
-        public Reminder()
+        public EventTaskAssignment()
         {
-            _api = new ReminderApi();
-            Model = new ReminderModel();
+            _api = new EventTaskAssignmentApi();
+            Model = new EventTaskAssignmentModel();
         }
 
-        public Reminder(ulong id)
+        public EventTaskAssignment(ulong id)
         {
-            _api = new ReminderApi();
+            _api = new EventTaskAssignmentApi();
             Model = _api.Load(id);
-            Content = Model.Content;
+            Content = Model.ReminderText;
         }
 
-        protected override IPestoApi<ReminderModel> GetApi()
+        protected override IPestoApi<EventTaskAssignmentModel> GetApi()
         {
             return _api;
         }
@@ -92,8 +83,8 @@ namespace PestoBot.Entity
         public async void Send(DiscordSocketClient client, ulong channelId)
         {
             var connectionLogChannel = (IMessageChannel)client.GetChannel(channelId);
-            await connectionLogChannel.SendMessageAsync(Model.Content);
-            Model.LastSent = DateTime.Now;
+            await connectionLogChannel.SendMessageAsync(Model.ReminderText);
+            Model.LastReminderSent = DateTime.Now;
             Save();
         }
     }

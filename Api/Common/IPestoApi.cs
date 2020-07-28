@@ -1,6 +1,4 @@
 ﻿using System.Threading.Tasks;
-using PestoBot.Database.Models.Common;
-using PestoBot.Database.Repositories.Common;
 
 namespace PestoBot.Api.Common
 {

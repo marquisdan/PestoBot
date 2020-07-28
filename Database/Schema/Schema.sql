@@ -1,5 +1,5 @@
 --
--- File generated with SQLiteStudio v3.2.1 on Tue Jul 28 10:11:44 2020
+-- File generated with SQLiteStudio v3.2.1 on Tue Jul 28 10:32:17 2020
 --
 -- Text encoding used: System
 --
@@ -41,25 +41,6 @@ CREATE TABLE Event (
 );
 
 
--- Table: EventAssignment
-DROP TABLE IF EXISTS EventAssignment;
-
-CREATE TABLE EventAssignment (
-    Id               INTEGER  PRIMARY KEY AUTOINCREMENT,
-    Created          DATETIME,
-    Modified         DATETIME,
-    AssignmentType   INTEGER,
-    ProjectDueDate   DATETIME,
-    TaskStartTime    DATETIME,
-    ReminderText     TEXT,
-    LastReminderSent DATETIME,
-    ProjectTaskId    BIGINT,
-    GuildId          BIGINT   REFERENCES Guild (Id),
-    UserId           BIGINT   REFERENCES User (Id),
-    EventId          BIGINT   REFERENCES Event (Id) 
-);
-
-
 -- Table: EventTask
 DROP TABLE IF EXISTS EventTask;
 
@@ -71,6 +52,25 @@ CREATE TABLE EventTask (
     Description STRING,
     GuildId     BIGINT   REFERENCES Guild (Id),
     EventId     INTEGER  REFERENCES Event (Id) 
+);
+
+
+-- Table: EventTaskAssignment
+DROP TABLE IF EXISTS EventTaskAssignment;
+
+CREATE TABLE EventTaskAssignment (
+    Id               INTEGER  PRIMARY KEY AUTOINCREMENT,
+    Created          DATETIME,
+    Modified         DATETIME,
+    AssignmentType   INTEGER,
+    ProjectDueDate   DATETIME,
+    TaskStartTime    DATETIME,
+    ReminderText     TEXT,
+    LastReminderSent DATETIME,
+    EventTaskId      BIGINT   REFERENCES EventTask (Id),
+    GuildId          BIGINT   REFERENCES Guild (Id),
+    UserId           BIGINT   REFERENCES User (Id),
+    EventId          BIGINT   REFERENCES Event (Id) 
 );
 
 

@@ -5,9 +5,7 @@ using System.Threading.Tasks;
 using Castle.Core.Internal;
 using Dapper;
 using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using PestoBot.Database.Models.Common;
-using PestoBot.Services;
 
 namespace PestoBot.Database.Repositories.Common
 {

@@ -1,6 +1,4 @@
-﻿using System;
-using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
-using PestoBot.Database.Models.Guild;
+﻿using PestoBot.Database.Models.Guild;
 using PestoBot.Entity.Common;
 
 namespace PestoBot.Entity

@@ -2,7 +2,6 @@
 using PestoBot.Api.Common;
 using PestoBot.Database.Models.Common;
 using PestoBot.Database.Models.SpeedrunEvent;
-using PestoBot.Database.Repositories.Common;
 
 namespace PestoBot.Entity.Common
 {
@@ -58,11 +57,7 @@ namespace PestoBot.Entity.Common
         }
     }
 
-    public class AbstractAssignment<T> : AbstractPestoEntity<T> where T: AbstractAssignmentModel
-    {
-    }
-
-    public class MarathonTaskAssignment : AbstractAssignment<MarathonTaskAssignmentModel>
+    public class MarathonTaskAssignment : AbstractPestoEntity<EventTaskAssignmentModel>
     {
         //Set Api before you do anything else 
     }

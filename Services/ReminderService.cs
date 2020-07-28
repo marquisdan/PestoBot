@@ -7,10 +7,9 @@ using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PestoBot.Api.Common;
 using PestoBot.Common;
-using PestoBot.Database.Models.Common;
 using PestoBot.Database.Models.SpeedrunEvent;
-using PestoBot.Database.Repositories.SpeedrunEvent;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -21,6 +20,8 @@ namespace PestoBot.Services
 {
     public class ReminderService
     {
+        #region Constructor & Setup
+
         private ulong reminderServiceId;
         private string reminderServiceToken;
         private const int Minute = 60000;
@@ -87,6 +88,8 @@ namespace PestoBot.Services
             _serviceProvider = services;
         }
 
+        #endregion
+
         public void Start()
         {
             _reminderTimer = new Timer(WakeReminderService, null, 0, Minute * 5);
@@ -96,28 +99,28 @@ namespace PestoBot.Services
         internal void WakeReminderService(object state)
         {
             _reminderServiceLog.Information($"{DateTime.Now.ToString(LogDateFormat)} : Waking Reminder Service");
-            FireRemindersByType();
+            FireRemindersByAssignmentType();
             _reminderServiceLog.Information($"{DateTime.Now.ToString(LogDateFormat)} : Reminder Service Sleeping");
         }
 
-        protected internal void FireRemindersByType()
+        protected internal void FireRemindersByAssignmentType()
         {
-            _reminderServiceLog.Information($"Processing tasks");
+            _reminderServiceLog.Information($"Processing one time reminders");
             ProcessReminders(ReminderTypes.Task);
-            if (IsTimeToProcessReminders(ReminderTimes.Project))
+            if (IsTimeToProcessRecurringReminders(ReminderTimes.Project))
             {
-                _reminderServiceLog.Information("Processing Project Reminders");
+                _reminderServiceLog.Information("Processing recurring reminders");
                 ProcessReminders(ReminderTypes.Project);
             }
 
-            if (IsTimeToProcessReminders(ReminderTimes.GoobyTime))
+            if (IsTimeToProcessRecurringReminders(ReminderTimes.GoobyTime))
             {
                 _reminderServiceLog.Information("Processing Debug Reminders");
                 ProcessReminders(ReminderTypes.DebugTask);
             }
         }
 
-        protected internal virtual bool IsTimeToProcessReminders(ReminderTimes reminderTime)
+        protected internal virtual bool IsTimeToProcessRecurringReminders(ReminderTimes reminderTime)
         {
             var now = GetCurrentTime();
             return now.Hour == (int) reminderTime && now.Minute < 30;
@@ -127,13 +130,13 @@ namespace PestoBot.Services
         {
             if (type == ReminderTypes.Project)
             {
-                _reminderServiceLog.Warning("Project reminders are disabled until design refactor is complete");
+                _reminderServiceLog.Warning("Recurring reminders are disabled until design refactor is complete");
                 return;
             }
-            //Get list of reminders
-            var reminders = GetListOfReminders(type);
+            //Get list of Event Assignments by type 
+            var eventTaskAssignments = GetListOfAssignments(type);
             //Filter into reminders that are due 
-            var dueReminders = reminders.Where(ShouldSendReminder);
+            var dueReminders = eventTaskAssignments.Where(ShouldSendReminder);
             //Send reminders if required
             foreach (var reminder in dueReminders)
             {
@@ -141,24 +144,23 @@ namespace PestoBot.Services
             }
         }
 
-        protected internal virtual List<ReminderModel> GetListOfReminders(ReminderTypes type)
+        protected internal virtual List<EventTaskAssignmentModel> GetListOfAssignments(ReminderTypes type)
         {
-            var repo = new ReminderRepository();
-            return repo.GetRemindersByType(type).Result;
+            return EventTaskAssignmentApi.GetAllAssignmentsByType(type);
         }
 
-        internal virtual bool ShouldSendReminder(ReminderModel model)
+        internal virtual bool ShouldSendReminder(EventTaskAssignmentModel eventTaskAssignment)
         {
-            var modelType = (ReminderTypes) model.Type;
-            return _oneTimeReminderTypes.Contains(modelType) ? ShouldSendOneTimeReminder(model)
-                : _recurringReminderTypes.Contains(modelType) && ShouldSendRecurringReminder(model);
+            var reminderType = (ReminderTypes) eventTaskAssignment.AssignmentType;
+            return _oneTimeReminderTypes.Contains(reminderType) ? ShouldSendOneTimeReminder(eventTaskAssignment)
+                : _recurringReminderTypes.Contains(reminderType) && ShouldSendRecurringReminder(eventTaskAssignment);
         }
 
-        protected internal virtual bool ShouldSendOneTimeReminder(ReminderModel model)
+        protected internal virtual bool ShouldSendOneTimeReminder(EventTaskAssignmentModel eventTaskAssignment)
         {
-            if (model.LastSent != DateTime.MinValue) return false; //Do not send reminder if it has already been sent
+            if (eventTaskAssignment.LastReminderSent != DateTime.MinValue) return false; //Do not send one time reminder if it has already been sent
 
-            var dueDate = GetDueDate(model);
+            var dueDate = GetDueDate(eventTaskAssignment);
             var currentTime = GetCurrentTime();
             var timeSpan = dueDate - currentTime;
             if (dueDate < currentTime)
@@ -170,69 +172,40 @@ namespace PestoBot.Services
             return timeSpan <= TimeSpan.FromMinutes((int) ReminderTimes.Task); 
         }
 
-        protected internal virtual bool ShouldSendRecurringReminder(ReminderModel model)
+        protected internal virtual bool ShouldSendRecurringReminder(EventTaskAssignmentModel eventTaskAssignment)
         {
+            //Not implemented yet
             return false;
         }
 
-        protected internal virtual DateTime GetDueDate(ReminderModel model)
+        protected internal virtual DateTime GetDueDate(EventTaskAssignmentModel eventTaskAssignment)
         {
-            var modelType = (ReminderTypes)model.Type;
+            var modelType = (ReminderTypes)eventTaskAssignment.AssignmentType;
 
             if (_oneTimeReminderTypes.Contains(modelType))
             {
-                return GetOneTimeReminderDueDate(model);
+                // These are reminders that occur a certain time before a scheduled run or task
+                // e.g. Tell a runner to get ready 30m before a run
+                return eventTaskAssignment.TaskStartTime;
             }
 
             if (_recurringReminderTypes.Contains(modelType))
             {
-                return GetRecurringReminderDueDate(model);
+                // Returns a long term due date for Projects that may span multiple marathons or may not be tied to a specific marathon.
+                // Examples include Creating a website, writing a schedule, recruiting runners etc
+                return eventTaskAssignment.ProjectDueDate;
             }
             
-            throw new ArgumentException("Reminder does not have a valid type");
-        }
-
-        /// <summary>
-        /// Returns a short term due date for Tasks or Runs
-        /// These are reminders that occur a certain time before a scheduled run or task
-        /// e.g. Tell a runner to get ready 30m before a run
-        /// </summary>
-        /// <returns></returns>
-        protected internal DateTime GetOneTimeReminderDueDate(ReminderModel model)
-        {
-            var assignment = GetAssignmentForReminder(model) as MarathonTaskAssignmentModel;
-            return assignment?.TaskStartTime ?? DateTime.MinValue;
-        }
-
-        /// <summary>
-        /// Returns a long term due date for Projects that may span multiple marathons or may not be tied to a specific marathon.
-        /// Examples include Creating a website, writing a schedule, recruiting runners etc
-        /// </summary>
-        /// <param name="model"></param>
-        /// <returns></returns>
-        protected internal DateTime GetRecurringReminderDueDate(ReminderModel model)
-        {
-            var assignment = GetAssignmentForReminder(model) as MarathonProjectAssignmentModel;
-            var project = GetProjectForAssignment(assignment);
-            return project.DueDate ?? DateTime.MinValue;
-        }
-
-        protected internal virtual IPestoModel GetAssignmentForReminder(ReminderModel model)
-        {
-            return new ReminderRepository().GetAssignmentForReminder(model).Result;
-        }
-
-        protected internal virtual MarathonProjectModel GetProjectForAssignment(MarathonProjectAssignmentModel model)
-        {
-            throw new NotImplementedException();
+            throw new ArgumentException("Assignment does not have a valid type");
         }
 
         protected internal virtual DateTime GetCurrentTime()
         {
+            //This is just virtualized for testing 
             return DateTime.Now;
         }
 
-        protected internal void SendReminder(ReminderModel reminder)
+        protected internal void SendReminder(EventTaskAssignmentModel eventTaskAssignment)
         {
             throw new NotImplementedException();
         }

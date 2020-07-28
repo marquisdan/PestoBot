@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NUnit.Framework;
 using PestoBot.Common;
-using PestoBot.Database.Models.Common;
 using PestoBot.Database.Models.SpeedrunEvent;
 using PestoBot.Services;
 using Serilog;
@@ -14,12 +12,12 @@ namespace PestoBot.Tests.ServiceTests
 {
     class ReminderServiceTest
     {
-        class ShouldSendTaskReminderTest
+        class ShouldSendOneTimeReminderTest
         {
             private ReminderService _sut;
             private DateTime _currentTime;
             private DateTime _dueDate;
-            private ReminderModel reminder;
+            private EventTaskAssignmentModel eventTaskAssignment;
 
             [SetUp]
             public void SetUp()
@@ -30,11 +28,11 @@ namespace PestoBot.Tests.ServiceTests
                 mockSut.Setup(x => x.InitServices(It.IsAny<IServiceProvider>()));
                 mockSut.Setup(x => x.CreateReminderServiceLoggerConfiguration()).Returns(new LoggerConfiguration().CreateLogger);
                 mockSut.Setup(x => x.GetCurrentTime()).Returns(() => _currentTime);
-                mockSut.Setup(x => x.GetDueDate(It.IsAny<ReminderModel>())).Returns(() => _dueDate);
-                reminder = new ReminderModel
+                mockSut.Setup(x => x.GetDueDate(It.IsAny<EventTaskAssignmentModel>())).Returns(() => _dueDate);
+                eventTaskAssignment = new EventTaskAssignmentModel
                 {
-                    Type = (int)ReminderTypes.Task,
-                    LastSent = DateTime.MinValue
+                    AssignmentType = (int)ReminderTypes.Task,
+                    LastReminderSent = DateTime.MinValue
                 };
                 _sut = mockSut.Object;
             }
@@ -44,7 +42,7 @@ namespace PestoBot.Tests.ServiceTests
             {
                 _dueDate = _currentTime.AddMinutes((int) ReminderTimes.Task - 1);
 
-                var result = _sut.ShouldSendOneTimeReminder(reminder);
+                var result = _sut.ShouldSendOneTimeReminder(eventTaskAssignment);
 
                 Assert.That(result, Is.True, "Flags to send reminder if task due date is within window");
             }
@@ -54,7 +52,7 @@ namespace PestoBot.Tests.ServiceTests
             {
                 _dueDate = _currentTime.AddMinutes(-1);
 
-                var result = _sut.ShouldSendReminder(reminder);
+                var result = _sut.ShouldSendReminder(eventTaskAssignment);
 
                 Assert.That(result, Is.False, "Does not send task reminder if due date is passed");
             }
@@ -64,7 +62,7 @@ namespace PestoBot.Tests.ServiceTests
             {
                 _dueDate = _currentTime.AddMinutes(ReminderService.TaskReminderTime + 1);
 
-                var result = _sut.ShouldSendReminder(reminder);
+                var result = _sut.ShouldSendReminder(eventTaskAssignment);
 
                 Assert.That(result, Is.False, "Does not send task reminder if due date is not yet within window");
             }
@@ -74,7 +72,7 @@ namespace PestoBot.Tests.ServiceTests
             {
                 _dueDate = _currentTime.AddMinutes(ReminderService.TaskReminderTime);
 
-                var result = _sut.ShouldSendReminder(reminder);
+                var result = _sut.ShouldSendReminder(eventTaskAssignment);
 
                 Assert.That(result, Is.True, "Flags to send reminder if task due date exactly at window");
             }
@@ -83,12 +81,12 @@ namespace PestoBot.Tests.ServiceTests
             public void DoesNotSendReminderIfAlreadySent()
             {
                 _dueDate = _currentTime.AddMinutes((int)ReminderTimes.Task - 1);
-                reminder = new ReminderModel()
+                eventTaskAssignment = new EventTaskAssignmentModel()
                 {
-                    Type = (int) ReminderTypes.Task,
-                    LastSent = DateTime.Now.AddMinutes(-5)
+                    AssignmentType = (int) ReminderTypes.Task,
+                    LastReminderSent = DateTime.Now.AddMinutes(-5)
                 };
-                var result = _sut.ShouldSendOneTimeReminder(reminder);
+                var result = _sut.ShouldSendOneTimeReminder(eventTaskAssignment);
 
                 Assert.That(result, Is.False, "Does not send reminder if already sent");
             }
@@ -108,7 +106,7 @@ namespace PestoBot.Tests.ServiceTests
                 _mockSut.Setup(x => x.InitServices(It.IsAny<IServiceProvider>()));
                 _mockSut.Setup(x => x.CreateReminderServiceLoggerConfiguration()).Returns(new LoggerConfiguration().CreateLogger);
                 _mockSut.Setup(x => x.GetCurrentTime()).Returns(() => _currentTime);
-                _mockSut.Setup(x => x.GetListOfReminders(It.IsAny<ReminderTypes>())).Returns(new List<ReminderModel>());
+                _mockSut.Setup(x => x.GetListOfAssignments(It.IsAny<ReminderTypes>())).Returns(new List<EventTaskAssignmentModel>());
 
             }
 
@@ -117,7 +115,7 @@ namespace PestoBot.Tests.ServiceTests
             {
                 _currentTime = DateTime.Parse($"October 29, 2019 {ReminderTimes.Project - 5}:00:00");
 
-                _mockSut.Object.FireRemindersByType();
+                _mockSut.Object.FireRemindersByAssignmentType();
 
                 _mockSut.Verify(x => x.ProcessReminders(ReminderTypes.Task), Times.Once);
                 _mockSut.Verify(x => x.ProcessReminders(ReminderTypes.Project), Times.Never);
@@ -128,7 +126,7 @@ namespace PestoBot.Tests.ServiceTests
             {
                 _currentTime = DateTime.Parse($"October 29, 2019 {(int)ReminderTimes.Project}:00:00");
 
-                _mockSut.Object.FireRemindersByType();
+                _mockSut.Object.FireRemindersByAssignmentType();
 
                 _mockSut.Verify(x => x.ProcessReminders(ReminderTypes.Task), Times.Once);
                 _mockSut.Verify(x => x.ProcessReminders(ReminderTypes.Project), Times.Once);
@@ -139,64 +137,59 @@ namespace PestoBot.Tests.ServiceTests
         {
             private ReminderService _sut;
             private Mock<ReminderService> _mockSut;
-            private DateTime _currentTime;
-            private IPestoModel _reminderAssignment;
+            private EventTaskAssignmentModel _eventTaskAssignment;
+            private DateTime _taskStartTime;
+            private DateTime _projectDueDate;
 
             [SetUp]
             public void SetUp()
             {
-                _currentTime = DateTime.Parse("October 29, 2019 16:30:00");
+                _taskStartTime = DateTime.Parse("October 29, 2016 16:30:00");
+                _projectDueDate = DateTime.Parse("August 13, 2018 7:15:00");
+
                 var provider = new ServiceCollection().BuildServiceProvider();
                 _mockSut = new Mock<ReminderService>(provider) { CallBase = true };
                 _mockSut.Setup(x => x.InitServices(It.IsAny<IServiceProvider>()));
                 _mockSut.Setup(x => x.CreateReminderServiceLoggerConfiguration()).Returns(new LoggerConfiguration().CreateLogger);
-                _mockSut.Setup(x => x.GetCurrentTime()).Returns(() => _currentTime);
-                _mockSut.Setup(x => x.GetAssignmentForReminder(It.IsAny<ReminderModel>()))
-                        .Returns(() => _reminderAssignment);
-
                 _sut = _mockSut.Object;
+
+                _eventTaskAssignment = new EventTaskAssignmentModel
+                {
+                    TaskStartTime = _taskStartTime,
+                    ProjectDueDate = _projectDueDate
+                };
+
             }
-            
+
             [Test]
             public void GetsShortTermDueDate()
             {
-                _reminderAssignment = new MarathonTaskAssignmentModel
-                {
-                    TaskStartTime = _currentTime.AddMinutes(29)
-                };
+                _eventTaskAssignment.AssignmentType = (int) ReminderTypes.Task;
 
-                var reminder = new ReminderModel
-                {
-                    Type = (int) ReminderTypes.Task
-                };
-
-                var result = _sut.GetOneTimeReminderDueDate(reminder);
-                var expected = ((MarathonTaskAssignmentModel) _reminderAssignment).TaskStartTime;
-                Assert.That(result, Is.EqualTo(expected), "Gets correct short term due date");
+                var result = _sut.GetDueDate(_eventTaskAssignment);
+                var expected = _taskStartTime;
+                
+                Assert.That(result, Is.EqualTo(expected), "Gets correct one time reminder due date");
             }
 
             [Test]
             public void GetsLongTermDueDate()
             {
-                _reminderAssignment = new MarathonProjectAssignmentModel();
-
-                var dueDate = _currentTime.AddDays(1);
-                var projectModel = new MarathonProjectModel()
-                {
-                    DueDate = dueDate
-                };
-
-                var reminder = new ReminderModel
-                {
-                    Type = (int) ReminderTypes.Project
-                };
-
-                _mockSut.Setup(x => x.GetProjectForAssignment(It.IsAny<MarathonProjectAssignmentModel>()))
-                    .Returns(projectModel);
-                var localSut = _mockSut.Object;
-                var result = localSut.GetRecurringReminderDueDate(reminder);
+                _eventTaskAssignment.AssignmentType = (int)ReminderTypes.Project;
                 
-                Assert.That(result, Is.EqualTo(dueDate));
+                var result = _sut.GetDueDate(_eventTaskAssignment);
+                var expected = _projectDueDate;
+
+                Assert.That(result, Is.EqualTo(expected), "Gets correct recurring reminder due date");
+            }
+
+            [Test]
+            public void ThrowsErrorForInvalidTypes()
+            {
+                _eventTaskAssignment.AssignmentType = -8675309;
+
+                var ex = Assert.Throws<ArgumentException>(() => _sut.GetDueDate(_eventTaskAssignment));
+                Assert.That(ex.Message, Is.EqualTo("Assignment does not have a valid type"));
             }
         }
     }
