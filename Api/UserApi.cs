@@ -22,6 +22,7 @@ namespace PestoBot.Api.Common
         public UserApi(UserModel model)
         {
             _model = model;
+            _repo = new UserRepository();
         }
 
         public UserModel GetUserByDiscordName(string discordName)

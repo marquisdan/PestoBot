@@ -2,13 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using PestoBot.Api;
 using PestoBot.Api.Common;
 using PestoBot.Common;
+using PestoBot.Database.Models;
 using PestoBot.Database.Models.SpeedrunEvent;
 using Serilog;
 using Serilog.Core;
@@ -98,21 +101,25 @@ namespace PestoBot.Services
 
         internal void WakeReminderService(object state)
         {
-            _reminderServiceLog.Information($"{DateTime.Now.ToString(LogDateFormat)} : Waking Reminder Service");
+            _reminderServiceLog.Verbose($"{DateTime.Now.ToString(LogDateFormat)} : Waking Reminder Service");
             FireRemindersByAssignmentType();
-            _reminderServiceLog.Information($"{DateTime.Now.ToString(LogDateFormat)} : Reminder Service Sleeping");
+            _reminderServiceLog.Verbose($"{DateTime.Now.ToString(LogDateFormat)} : Reminder Service Sleeping");
         }
 
         protected internal void FireRemindersByAssignmentType()
         {
+            //Always process One-time reminders
             _reminderServiceLog.Information($"Processing one time reminders");
             ProcessReminders(ReminderTypes.Task);
+
+            //Process Recurring Reminders
             if (IsTimeToProcessRecurringReminders(ReminderTimes.Project))
             {
                 _reminderServiceLog.Information("Processing recurring reminders");
                 ProcessReminders(ReminderTypes.Project);
             }
 
+            //Process Debug Reminders
             if (IsTimeToProcessRecurringReminders(ReminderTimes.GoobyTime))
             {
                 _reminderServiceLog.Information("Processing Debug Reminders");
@@ -146,7 +153,7 @@ namespace PestoBot.Services
 
         protected internal virtual List<EventTaskAssignmentModel> GetListOfAssignments(ReminderTypes type)
         {
-            return EventTaskAssignmentApi.GetAllAssignmentsByType(type);
+            return new EventTaskAssignmentApi().GetAllAssignmentsByType(type);
         }
 
         internal virtual bool ShouldSendReminder(EventTaskAssignmentModel eventTaskAssignment)
@@ -205,9 +212,30 @@ namespace PestoBot.Services
             return DateTime.Now;
         }
 
-        protected internal void SendReminder(EventTaskAssignmentModel eventTaskAssignment)
+        protected ulong? GetReminderChannelForType(SocketGuild guild, ReminderTypes reminderType)
         {
-            throw new NotImplementedException();
+            var channel = new GuildSettingsApi().GetReminderChannelForType(guild.Id, reminderType);
+            if(channel == null) { _reminderServiceLog.Warning($"{guild.Name} does not have a type {reminderType} channel set");}
+            return channel;
+        }
+
+        protected internal async void SendReminder(EventTaskAssignmentModel eventTaskAssignment)
+        {
+            var guild = _client.GetGuild(eventTaskAssignment.Id);
+            var reminderType = (ReminderTypes) eventTaskAssignment.AssignmentType;
+            var logChannelId = GetReminderChannelForType(guild, reminderType);
+
+            if (logChannelId == null)
+            {
+                //Check if the guild has that type of channel set
+                _reminderServiceLog.Error($"Could not send reminder. {guild.Name} is likely missing a {reminderType} reminder channel");
+            }
+            else
+            {
+                //Send the reminder
+                var reminderChannel = (IMessageChannel)_client.GetChannel((ulong)logChannelId);
+                await reminderChannel.SendMessageAsync(eventTaskAssignment.ReminderText);
+            }
         }
     }
 }

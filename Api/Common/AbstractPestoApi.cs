@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using PestoBot.Common;
 using PestoBot.Database.Models.Common;
+using PestoBot.Database.Models.Guild;
 using PestoBot.Database.Repositories.Common;
+using PestoBot.Database.Repositories.Guild;
+using PestoBot.Entity;
 using PestoBot.Services;
 
 namespace PestoBot.Api.Common
@@ -55,6 +59,39 @@ namespace PestoBot.Api.Common
             model.Modified = DateTime.Now;
             await repo.UpdateAsync(model);
         }
+    }
+
+    internal class GuildSettingsApi : AbstractPestoApi<GuildSettingsModel>
+    {
+        private GuildSettingsModel _model;
+        private readonly GuildSettingsRepository _repo;
+
+        internal GuildSettingsApi()
+        {
+            _model = new GuildSettingsModel()
+            {
+                Created = DateTime.Now
+            };
+
+            _repo = new GuildSettingsRepository();
+        }
+
+        internal GuildSettingsApi(GuildSettingsModel model)
+        {
+            model = new GuildSettingsModel();
+            _repo = new GuildSettingsRepository();
+        }
+
+        public ulong? GetReminderChannelForType(ReminderTypes reminderType)
+        {
+            return GetReminderChannelForType(_model.GuildId, reminderType);
+        }
+
+        public ulong? GetReminderChannelForType(ulong guildId, ReminderTypes reminderType)
+        {
+            return _repo.GetReminderChannelForType(_model.GuildId, reminderType).Result;
+        }
+
     }
 }
       
