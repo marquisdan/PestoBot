@@ -1,6 +1,7 @@
 ﻿using System;
 using Discord;
 using Discord.WebSocket;
+using PestoBot.Api;
 using PestoBot.Api.Common;
 using PestoBot.Common;
 using PestoBot.Database.Models.SpeedrunEvent;

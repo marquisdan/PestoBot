@@ -8,7 +8,7 @@ using PestoBot.Common;
 using PestoBot.Database.Models.SpeedrunEvent;
 using PestoBot.Database.Repositories.Common;
 
-namespace PestoBot.Database.Repositories.SpeedrunEvent
+namespace PestoBot.Database.Repositories.Event
 { 
     internal class EventTaskAssignmentRepository : AbstractPestoRepository<EventTaskAssignmentModel>
     {
@@ -27,8 +27,6 @@ namespace PestoBot.Database.Repositories.SpeedrunEvent
                 return data.ToList();
             }
         }
-
-
-
+        
     }
 }

@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using PestoBot.Api.Common;
 using PestoBot.Common;
 using PestoBot.Database.Models.SpeedrunEvent;
-using PestoBot.Database.Repositories.SpeedrunEvent;
+using PestoBot.Database.Repositories.Event;
 
-namespace PestoBot.Api.Common
+namespace PestoBot.Api
 {
     class EventTaskAssignmentApi : AbstractPestoApi<EventTaskAssignmentModel>
     {
@@ -27,10 +28,9 @@ namespace PestoBot.Api.Common
             _repo = new EventTaskAssignmentRepository();
         }
 
-        internal static List<EventTaskAssignmentModel> GetAllAssignmentsByType(ReminderTypes type)
+        internal  List<EventTaskAssignmentModel> GetAllAssignmentsByType(ReminderTypes type)
         {
-            //TODO Not implemented yet
-            return new List<EventTaskAssignmentModel>();
+            return _repo.GetAssignmentsByType(type).Result;
         }
     }
 }
