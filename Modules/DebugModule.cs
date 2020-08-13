@@ -14,6 +14,7 @@ using PestoBot.Database.Repositories.DebugRepo;
 using PestoBot.Database.Repositories.Guild;
 using PestoBot.Database.Repositories.SpeedrunEvent;
 using PestoBot.Entity;
+using PestoBot.Entity.Event;
 using Serilog;
 
 namespace PestoBot.Modules

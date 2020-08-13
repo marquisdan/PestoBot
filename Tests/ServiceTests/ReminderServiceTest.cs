@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using NUnit.Framework;
 using PestoBot.Common;
+using PestoBot.Database.Models.Event;
 using PestoBot.Database.Models.SpeedrunEvent;
 using PestoBot.Services;
 using Serilog;

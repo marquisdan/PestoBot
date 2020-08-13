@@ -1,7 +1,7 @@
 ﻿using System;
 using PestoBot.Database.Models.Common;
 
-namespace PestoBot.Database.Models.SpeedrunEvent
+namespace PestoBot.Database.Models.Event
 {
     public class EventTaskAssignmentModel : AbstractPestoModel
     {
@@ -11,8 +11,8 @@ namespace PestoBot.Database.Models.SpeedrunEvent
         public string ReminderText { get; set; }
         public DateTime LastReminderSent { get; set; }
         public ulong EventTaskId { get; set; }
-        public ulong GuildId { get; set; }
         public ulong UserId { get; set; }
         public ulong MarathonTaskId { get; set; }
+        public ulong EventId { get; set; }
     }
 }

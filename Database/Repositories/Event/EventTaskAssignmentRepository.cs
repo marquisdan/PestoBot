@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Dapper;
 using Microsoft.Data.Sqlite;
 using PestoBot.Common;
+using PestoBot.Database.Models.Event;
 using PestoBot.Database.Models.SpeedrunEvent;
 using PestoBot.Database.Repositories.Common;
 

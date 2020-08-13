@@ -1,7 +1,6 @@
 ﻿using System;
 using PestoBot.Api.Common;
 using PestoBot.Database.Models.Common;
-using PestoBot.Database.Models.SpeedrunEvent;
 
 namespace PestoBot.Entity.Common
 {
@@ -51,14 +50,9 @@ namespace PestoBot.Entity.Common
             api.Save(Model);
         }
 
-        public void Save()
+        public virtual void Save()
         {
             Save(GetApi());
         }
-    }
-
-    public class MarathonTaskAssignment : AbstractPestoEntity<EventTaskAssignmentModel>
-    {
-        //Set Api before you do anything else 
     }
 }

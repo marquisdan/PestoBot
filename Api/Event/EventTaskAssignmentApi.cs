@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using PestoBot.Api.Common;
 using PestoBot.Common;
+using PestoBot.Database.Models.Event;
 using PestoBot.Database.Models.SpeedrunEvent;
 using PestoBot.Database.Repositories.Event;
 
-namespace PestoBot.Api
+namespace PestoBot.Api.Event
 {
     class EventTaskAssignmentApi : AbstractPestoApi<EventTaskAssignmentModel>
     {
