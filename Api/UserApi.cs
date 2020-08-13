@@ -1,8 +1,9 @@
 ﻿using System;
+using PestoBot.Api.Common;
 using PestoBot.Database.Models.Guild;
 using PestoBot.Database.Repositories.Common;
 
-namespace PestoBot.Api.Common
+namespace PestoBot.Api
 {
     internal class UserApi : AbstractPestoApi<UserModel>
     {

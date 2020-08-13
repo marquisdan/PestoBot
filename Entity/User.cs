@@ -26,6 +26,11 @@ namespace PestoBot.Entity
 
         #endregion
 
+        public User()
+        {
+
+        }
+
         public User(ulong id) : base(id)
         {
             
@@ -34,6 +39,21 @@ namespace PestoBot.Entity
         public User(string DiscordName)
         {
             
+        }
+
+        public User(User user)
+        {
+            Model.Id = user.Id;
+            Model.Created = user.Created;
+            Model.Modified = user.Modified;
+            Model.Username = user.Username;
+            Model.DiscordName = user.DiscordName;
+            Model.IsVolunteer = user.IsVolunteer;
+        }
+
+        public User(UserModel model)
+        {
+            Model = model;
         }
 
     }
