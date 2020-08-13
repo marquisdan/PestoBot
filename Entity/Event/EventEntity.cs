@@ -1,4 +1,5 @@
-﻿using PestoBot.Api.Event;
+﻿using System;
+using PestoBot.Api.Event;
 using PestoBot.Database.Models.SpeedrunEvent;
 using PestoBot.Entity.Common;
 
@@ -8,7 +9,22 @@ namespace PestoBot.Entity.Event
     {
         private readonly EventApi _api;
 
+        public EventEntity(EventModel model)
+        {
+            _api = new EventApi();
+            Model = model;
+        }
 
-
+        public EventEntity(string name)
+        {
+            _api = new EventApi();
+            var existingModel = _api.GetEventByName(name);
+            Model = existingModel ?? new EventModel()
+            {
+                Created = DateTime.Now,
+                Modified = DateTime.Now,
+                Name = name
+            };
+        }
     }
 }

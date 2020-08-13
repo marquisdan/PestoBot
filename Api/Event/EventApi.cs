@@ -26,5 +26,10 @@ namespace PestoBot.Api.Event
             _model = model;
             _repo = new EventRepository();
         }
+
+        internal EventModel GetEventByName(string name)
+        {
+            return _repo.GetEventByName(name).Result;
+        }
     }
 }

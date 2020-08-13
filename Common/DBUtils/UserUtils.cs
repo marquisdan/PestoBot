@@ -6,7 +6,7 @@ namespace PestoBot.Common.DBUtils
 {
     internal static class UserUtils
     {
-        public static User GetUserByDiscordName(DiscordSocketClient client, string discordName)
+        internal static User GetUserByDiscordName(DiscordSocketClient client, string discordName)
         {
             var userModel = new UserRepository().GetUserByDiscordName(discordName).Result;
             var user = userModel == null ? new User(GenerateNewUserFromDiscordName(client, discordName)) : new User(userModel);

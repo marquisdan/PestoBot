@@ -3,9 +3,12 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using PestoBot.Common;
+using PestoBot.Common.CSVReaders;
 using PestoBot.Common.CustomPreconditions;
+using PestoBot.Common.DBUtils;
 using PestoBot.Database.Models.SpeedrunEvent;
 using PestoBot.Database.Repositories.SpeedrunEvent;
+using PestoBot.Entity.Event;
 
 namespace PestoBot.Modules
 {
@@ -235,6 +238,36 @@ namespace PestoBot.Modules
                         await ReplyAsync($"Something has gone catastrophically wrong and you deleted {numRows} events. Congrats.");
                         break;
                     }
+            }
+        }
+
+        //ReadRemindersForEvent
+        [RequireBotAdmin]
+        [Command("ReadRunnerCSV")]
+        [Alias("ReadRunnerCSVForEvent", "RunnerCSV")]
+        [Summary("Reads a runner CSV for an Event")]
+        public async Task ReadRunnerCsvForEvent(
+            [Summary("Path to CSV")]
+            string filePath,
+            [Summary("Optional: The event name (if not supplied, will use next event for this server")]
+            string eventName = "")
+        {
+            try
+            {
+                EventEntity evnt;
+                if (eventName == "")
+                {
+                    evnt = EventUtils.GetNextEventForGuild(Context.Guild.Id);
+                }
+
+                evnt = new EventEntity(eventName);
+                var events = ReminderReader.ReadRunnerReminderCsvForEvent(filePath, evnt.Id);
+
+                await ReplyAsync(TextUtils.GetSuccessText("k"));
+            }
+            catch (Exception e)
+            {
+                await ReplyAsync(TextUtils.GetErrorText("Nope: " + e.Message));
             }
         }
     }
