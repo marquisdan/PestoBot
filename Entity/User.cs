@@ -1,4 +1,6 @@
-﻿using PestoBot.Database.Models.Guild;
+﻿using PestoBot.Api;
+using PestoBot.Api.Common;
+using PestoBot.Database.Models.Guild;
 using PestoBot.Entity.Common;
 
 namespace PestoBot.Entity
@@ -7,16 +9,18 @@ namespace PestoBot.Entity
     {
         #region Public Properties
 
+        private UserApi _api = new UserApi();
+
         public string Username
         {
             get => Model.Username; 
             set => Model.Username = value;
         }
 
-        public string DiscordName
+        public string Discriminator
         {
-            get => Model.DiscordName;
-            set => Model.DiscordName = value;
+            get => Model.Discriminator;
+            set => Model.Discriminator = value;
         }
         public bool IsVolunteer
         {
@@ -47,7 +51,7 @@ namespace PestoBot.Entity
             Model.Created = user.Created;
             Model.Modified = user.Modified;
             Model.Username = user.Username;
-            Model.DiscordName = user.DiscordName;
+            Model.Discriminator = user.Discriminator;
             Model.IsVolunteer = user.IsVolunteer;
         }
 
@@ -56,5 +60,9 @@ namespace PestoBot.Entity
             Model = model;
         }
 
+        protected override IPestoApi<UserModel> GetApi()
+        {
+            return _api;
+        }
     }
 }

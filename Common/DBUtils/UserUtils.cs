@@ -6,20 +6,22 @@ namespace PestoBot.Common.DBUtils
 {
     internal static class UserUtils
     {
-        internal static User GetUserByDiscordName(DiscordSocketClient client, string discordName)
+        internal static User GetUserByDiscordName(DiscordSocketClient client, string userName, string discriminator)
         {
-            var userModel = new UserRepository().GetUserByDiscordName(discordName).Result;
-            var user = userModel == null ? new User(GenerateNewUserFromDiscordName(client, discordName)) : new User(userModel);
+            var userModel = new UserRepository().GetUserByDiscordName(userName, discriminator).Result;
+            var user = userModel == null ? new User(GenerateNewUser(client, userName, discriminator)) : new User(userModel);
 
             return user;
         }
 
-        private static User GenerateNewUserFromDiscordName(DiscordSocketClient client, string discordName)
+        private static User GenerateNewUser(DiscordSocketClient client, string userName, string discriminator)
         {
-            return new User
+            var socketUser = client.GetUser(userName, discriminator);
+
+            return new User(socketUser.Id)
             {
-                Username = client.GetUser(discordName, null).Username,
-                DiscordName = discordName
+                Username = client.GetUser(userName, discriminator).Username,
+                Discriminator = userName
             };
         }
     }

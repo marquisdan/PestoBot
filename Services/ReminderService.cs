@@ -93,20 +93,20 @@ namespace PestoBot.Services
 
         #endregion
 
-        public void Start()
+        public virtual void Start()
         {
-            _reminderTimer = new Timer(WakeReminderService, null, 0, Minute * 5);
+            //_reminderTimer = new Timer(WakeReminderService, null, 0, Minute * 5);
             //reminderTimer = new Timer(WakeReminderService, null, 0, 5000); //5 second sleep period for debugging/Testing
         }
 
-        internal void WakeReminderService(object state)
+        internal virtual void WakeReminderService(object state)
         {
             _reminderServiceLog.Verbose($"{DateTime.Now.ToString(LogDateFormat)} : Waking Reminder Service");
             FireRemindersByAssignmentType();
             _reminderServiceLog.Verbose($"{DateTime.Now.ToString(LogDateFormat)} : Reminder Service Sleeping");
         }
 
-        protected internal void FireRemindersByAssignmentType()
+        protected internal virtual void FireRemindersByAssignmentType()
         {
             //Always process One-time reminders
             _reminderServiceLog.Information($"Processing one time reminders");
@@ -212,14 +212,14 @@ namespace PestoBot.Services
             return DateTime.Now;
         }
 
-        protected ulong? GetReminderChannelForType(SocketGuild guild, ReminderTypes reminderType)
+        protected virtual ulong? GetReminderChannelForType(SocketGuild guild, ReminderTypes reminderType)
         {
             var channel = new GuildSettingsApi().GetReminderChannelForType(guild.Id, reminderType);
             if(channel == null) { _reminderServiceLog.Warning($"{guild.Name} does not have a type {reminderType} channel set");}
             return channel;
         }
 
-        protected internal async void SendReminder(EventTaskAssignmentModel eventTaskAssignment)
+        protected internal virtual async void SendReminder(EventTaskAssignmentModel eventTaskAssignment)
         {
             var guild = _client.GetGuild(eventTaskAssignment.Id);
             var reminderType = (ReminderTypes) eventTaskAssignment.AssignmentType;
@@ -237,5 +237,15 @@ namespace PestoBot.Services
                 await reminderChannel.SendMessageAsync(eventTaskAssignment.ReminderText);
             }
         }
+    }
+
+    public class TemporaryReminderService : ReminderService
+    {
+        public TemporaryReminderService(IServiceProvider services) : base(services)
+        {
+        }
+
+
+
     }
 }

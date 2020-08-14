@@ -20,7 +20,6 @@ namespace PestoBot.Common.CSVReaders
         //Headers
         private const string ContentHeader = "Content";
         private const string DiscordUserHeader = "DiscordUserName";
-        private const string EventNameHeader = "EventNameHeader";
         private const string ScheduleTimeHeader = "Scheduled";
         private const string GameHeader = "Game";
 
@@ -30,12 +29,18 @@ namespace PestoBot.Common.CSVReaders
         public string FilePath { get; set; }
         public ReminderTypes ReminderType { get; set; }
 
-        ReminderReader(IServiceProvider services)
+
+        internal ReminderReader(DiscordSocketClient client)
+        {
+            _client = client;
+        }
+
+        internal ReminderReader(IServiceProvider services)
         {
             _client = services.GetRequiredService<DiscordSocketClient>();
         }
 
-        ReminderReader(IServiceProvider services, string filePath = "", ReminderTypes type = ReminderTypes.Run)
+        internal ReminderReader(IServiceProvider services, string filePath = "", ReminderTypes type = ReminderTypes.Run)
         {
             FilePath = filePath;
             ReminderType = type;
@@ -45,10 +50,11 @@ namespace PestoBot.Common.CSVReaders
         }
 
 
-        internal static ICollection<EventTaskAssignment> ReadRunnerReminderCsvForEvent(string filepath, ulong eventId)
+        internal ICollection<EventTaskAssignment> ReadRunnerReminderCsvForEvent(string filepath, ulong eventId)
         {
-            using var reader = new StreamReader("filepath");
+            using var reader = new StreamReader(filepath);
             using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+            csv.Configuration.Delimiter = ";";
 
             var assignmentsList = new List<EventTaskAssignment>();
             csv.Read();
@@ -56,7 +62,8 @@ namespace PestoBot.Common.CSVReaders
 
             while (csv.Read())
             {
-                var user = UserUtils.GetUserByDiscordName(_client, csv.GetField<string>(DiscordUserHeader));
+                var userName = csv.GetField<string>(DiscordUserHeader).Split('#');
+                var user = UserUtils.GetUserByDiscordName(_client, userName[0],userName[1]);
                 var game = csv.GetField<string>(GameHeader);
 
                 var record = new EventTaskAssignment
@@ -73,7 +80,7 @@ namespace PestoBot.Common.CSVReaders
             return assignmentsList;
         }
 
-        internal static ICollection<EventTaskAssignment> ReadRunnerReminderCsvForEvent(string filepath, EventEntity evnt)
+        internal ICollection<EventTaskAssignment> ReadRunnerReminderCsvForEvent(string filepath, EventEntity evnt)
         {
             return ReadRunnerReminderCsvForEvent(filepath, evnt.Id);
         }

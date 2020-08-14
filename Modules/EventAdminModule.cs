@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using Discord.WebSocket;
 using PestoBot.Common;
 using PestoBot.Common.CSVReaders;
 using PestoBot.Common.CustomPreconditions;
@@ -254,6 +255,7 @@ namespace PestoBot.Modules
         {
             try
             {
+                var reader = new ReminderReader((DiscordSocketClient) Context.Client);
                 EventEntity evnt;
                 if (eventName == "")
                 {
@@ -261,7 +263,7 @@ namespace PestoBot.Modules
                 }
 
                 evnt = new EventEntity(eventName);
-                var events = ReminderReader.ReadRunnerReminderCsvForEvent(filePath, evnt.Id);
+                var events = reader.ReadRunnerReminderCsvForEvent(filePath, evnt.Id);
 
                 await ReplyAsync(TextUtils.GetSuccessText("k"));
             }

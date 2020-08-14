@@ -210,6 +210,25 @@ namespace PestoBot.Modules
             };
         }
 
+        [RequireOwner]
+        [Command("PingUserTest")]
+        public async Task PingUserTest(string pingTarget)
+        {
+            var isId = ulong.TryParse(pingTarget, out var id);
+            IUser user;
+            if (isId)
+            {
+                user = Context.Client.GetUserAsync(id).Result;
+            }
+            else
+            {
+                var userName = pingTarget.Split('#');
+                user = Context.Client.GetUserAsync(userName[0], userName[1]).Result;
+            }
+
+            await ReplyAsync($"{user.Mention} test");
+        }
+
 
         //[Command("EnableGooby")]
         //[RequireBotAdmin]

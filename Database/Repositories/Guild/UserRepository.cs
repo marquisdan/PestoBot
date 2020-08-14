@@ -3,6 +3,7 @@ using System.Data;
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.Data.Sqlite;
+using NUnit.Framework.Constraints;
 using PestoBot.Database.Models.Guild;
 
 namespace PestoBot.Database.Repositories.Common
@@ -12,14 +13,15 @@ namespace PestoBot.Database.Repositories.Common
         public UserRepository()
         {
             TableName = "User";
+            AutoIncrementId = false;
         }
 
-        public async Task<UserModel> GetUserByDiscordName(string discordName)
+        public async Task<UserModel> GetUserByDiscordName(string discordName, string discriminator)
         {
             using IDbConnection db = new SqliteConnection(LoadConnectionString());
 
-            var query = $"Select * from {TableName} where DiscordName=@DiscordName";
-            var dynamicParams = new {DiscordName = discordName};
+            var query = $"Select * from {TableName} where UserName=@UserName AND Discriminator = @Discriminator";
+            var dynamicParams = new { UserName = discordName, Discriminator = discriminator};
 
             var result = await db.QuerySingleOrDefaultAsync<UserModel>(query, dynamicParams);
 
