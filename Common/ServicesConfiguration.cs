@@ -9,8 +9,9 @@ using Serilog;
 
 namespace PestoBot.Common
 {
-    public static class ServicesConfiguration
+    internal static class ServicesConfiguration
     {
+        private static readonly IServiceProvider ServiceProvider;
         private static DiscordSocketClient _client;
         private static CommandService _commandService;
         private static IConfiguration _config;
@@ -21,8 +22,8 @@ namespace PestoBot.Common
             _client = InitClient();
             _commandService = InitCommandService();
             _config = ConfigService.BuildConfig();
-            var serviceProvider = ConfigureServices();
-            _logger = serviceProvider.GetRequiredService<ILogger<DiscordSocketClient>>();
+            ServiceProvider = BuildServiceProvider();
+            _logger = ServiceProvider.GetRequiredService<ILogger<DiscordSocketClient>>();
         }
 
         /// <summary>
@@ -50,7 +51,12 @@ namespace PestoBot.Common
         /// Adds all services
         /// </summary>
         /// <returns></returns>
-        public static IServiceProvider ConfigureServices()
+        internal static IServiceProvider GetServiceProvider()
+        {
+            return ServiceProvider;
+        }
+
+        private static IServiceProvider BuildServiceProvider()
         {
             var map = new ServiceCollection()
                 .AddSingleton(_config)

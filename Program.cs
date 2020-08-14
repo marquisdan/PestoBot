@@ -10,7 +10,7 @@ namespace PestoBot
     {
         static void Main(string[] args)
         {
-            var serviceProvider = ServicesConfiguration.ConfigureServices();
+            var serviceProvider = ServicesConfiguration.GetServiceProvider();
             SetUpLogger();
             new PestoBot(serviceProvider).MainAsync().GetAwaiter().GetResult();
         }

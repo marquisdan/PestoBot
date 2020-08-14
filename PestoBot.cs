@@ -42,8 +42,7 @@ namespace PestoBot
             _client.GuildUnavailable += AnnounceDisconnectAsync;
 
             //Start up / init our various services
-            _reminderService.Start();
-           // _serviceProvider.GetRequiredService<LogService>();
+            // _serviceProvider.GetRequiredService<LogService>();
             await _commandHandler.InstallCommandsAsync();
 
             //Keep bot connected

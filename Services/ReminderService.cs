@@ -1,7 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
+using CsvHelper;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -25,27 +29,27 @@ namespace PestoBot.Services
     {
         #region Constructor & Setup
 
-        private ulong reminderServiceId;
-        private string reminderServiceToken;
-        private const int Minute = 60000;
-        private const int Hour = Minute * 60;
-        private const int Day = Hour * 24;
+        protected ulong reminderServiceId;
+        protected string reminderServiceToken;
+        protected const int Minute = 60000;
+        protected const int Hour = Minute * 60;
+        protected const int Day = Hour * 24;
         internal const int TaskReminderTime = 30; //Remind tasks this many minutes before due date
-        private const string LogDateFormat = "MMMM dd, yyyy HH:mm:ss tt zz";
+        protected const string LogDateFormat = "MMMM dd, yyyy HH:mm:ss tt zz";
 
-        private readonly List<ReminderTypes> _oneTimeReminderTypes;
-        private readonly List<ReminderTypes> _recurringReminderTypes;
+        protected readonly List<ReminderTypes> _oneTimeReminderTypes;
+        protected readonly List<ReminderTypes> _recurringReminderTypes;
 
         //Service injection 
-        private IConfiguration _config;
-        private DiscordSocketClient _client;
-        private CommandService _commands;
-        private Microsoft.Extensions.Logging.ILogger _logger;
-        private IServiceProvider _serviceProvider;
+        protected IConfiguration _config;
+        protected DiscordSocketClient _client;
+        protected CommandService _commands;
+        protected Microsoft.Extensions.Logging.ILogger _logger;
+        protected IServiceProvider _serviceProvider;
 
         // ReSharper disable once NotAccessedField.Local
-        private Timer _reminderTimer;
-        private readonly ILogger _reminderServiceLog; //separate log to filter out Reminder Service events 
+        protected Timer _reminderTimer;
+        protected readonly ILogger _reminderServiceLog; //separate log to filter out Reminder Service events 
 
         public ReminderService(IServiceProvider services)
         {
@@ -53,6 +57,27 @@ namespace PestoBot.Services
             InitServices(services);
             _reminderServiceLog = CreateReminderServiceLoggerConfiguration();
 
+            //Populate reminder lists
+            _oneTimeReminderTypes = new List<ReminderTypes>
+            {
+                ReminderTypes.DebugTask,
+                ReminderTypes.Run,
+                ReminderTypes.Task
+            };
+
+            _recurringReminderTypes = new List<ReminderTypes>
+            {
+                ReminderTypes.Project,
+                ReminderTypes.DebugProject
+            };
+        }
+
+        public ReminderService()
+        {
+            _serviceProvider = ServicesConfiguration.GetServiceProvider();
+            InitServices(_serviceProvider);
+
+            _reminderServiceLog = CreateReminderServiceLoggerConfiguration();
             //Populate reminder lists
             _oneTimeReminderTypes = new List<ReminderTypes>
             {
@@ -93,7 +118,7 @@ namespace PestoBot.Services
 
         #endregion
 
-        public virtual void Start()
+        internal virtual void Start()
         {
             //_reminderTimer = new Timer(WakeReminderService, null, 0, Minute * 5);
             //reminderTimer = new Timer(WakeReminderService, null, 0, 5000); //5 second sleep period for debugging/Testing
@@ -239,13 +264,120 @@ namespace PestoBot.Services
         }
     }
 
-    public class TemporaryReminderService : ReminderService
+    public  class MarathonReminderService : ReminderService
     {
-        public TemporaryReminderService(IServiceProvider services) : base(services)
+        //Timing Stuff
+        private int _behind = 0;
+
+        //Runner Headers
+        private const string ContentHeader = "Content";
+        private const string DiscordUserHeader = "DiscordUserName";
+        private const string ScheduleTimeHeader = "Scheduled";
+        private const string GameHeader = "Game";
+
+        //Volunteer Headers
+
+        //Filename Stuff
+        // ReSharper disable InconsistentNaming
+        private const string KEY_RUNNERS = "Runners";
+        private const string KEY_HOSTS = "Hosts";
+        private const string KEY_RESTREAM = "Restreamers";
+        private const string KEY_SETUP = "Setup";
+        private const string KEY_SOCIAL_MEDIA = "Social_Media";
+        // ReSharper restore InconsistentNaming
+
+        public string EventName { get; set; }
+        
+        public MarathonReminderService(IServiceProvider services) : base(services)
         {
+            if(_serviceProvider == null){ _serviceProvider = ServicesConfiguration.GetServiceProvider();}
         }
 
+        public MarathonReminderService() : base() { }
 
+        internal override void Start()
+        {
+            _reminderTimer = new Timer(WakeReminderService, null, 0, Minute * 1);
+        }
+
+        protected void SetBehind(int behind)
+        {
+            _behind = behind;
+            _reminderTimer.Change(0, Minute * behind);
+        }
+
+        protected internal override void FireRemindersByAssignmentType()
+        {
+
+            _reminderServiceLog.Information($"Checking reminders for {EventName}");
+            //Handle Runners
+            ReadReminderCSV("runners");
+            //Handle Hosts
+
+            //Handle Restreamers
+
+            //Handle Setup
+
+            //Handle Social Media
+
+        }
+
+        private void ReadReminderCSV(string fileName)
+        {
+
+            try
+            {
+                var filePath = $@"{EventName}\{fileName}.csv";
+                var records = new List<object>();
+
+                using var reader = new StreamReader(filePath);
+                using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+                csv.Configuration.Delimiter = ";"; //Horaro uses ;, yay
+                csv.Read();
+                csv.ReadHeader();
+
+                while (csv.Read())
+                {
+                    var record = new
+                    {
+                        RunStart = csv.GetField<DateTime>(ScheduleTimeHeader),
+                        Game = csv.GetField<string>(GameHeader),
+                        Username = csv.GetField<string>(DiscordUserHeader), 
+                        //Sent = csv.GetField<string>(DiscordUserHeader)
+                    };
+
+                    records.Add(record);
+                }
+
+                using (var writer = new StreamWriter($@"{EventName}\{fileName}_Processing.csv"))
+                using (var csv2 = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                {
+                    csv2.WriteRecords(records);
+                }
+                reader.Close();
+                
+            }
+            catch (Exception e)
+            {
+                _reminderServiceLog.Error(e.Message);
+            }
+        }
 
     }
 }
+
+/*
+            var isId = ulong.TryParse(pingTarget, out var id);
+            IUser user;
+            if (isId)
+            {
+                user = Context.Client.GetUserAsync(id).Result;
+            }
+            else
+            {
+                var userName = pingTarget.Split('#');
+                user = Context.Client.GetUserAsync(userName[0], userName[1]).Result;
+            }
+
+            await ReplyAsync($"{user.Mention} test");
+*/

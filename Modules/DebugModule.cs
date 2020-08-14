@@ -15,6 +15,7 @@ using PestoBot.Database.Repositories.Guild;
 using PestoBot.Database.Repositories.SpeedrunEvent;
 using PestoBot.Entity;
 using PestoBot.Entity.Event;
+using PestoBot.Services;
 using Serilog;
 
 namespace PestoBot.Modules
@@ -227,6 +228,20 @@ namespace PestoBot.Modules
             }
 
             await ReplyAsync($"{user.Mention} test");
+        }
+
+        [RequireOwner]
+        [Command("StartReminders")]
+        public async Task StartReminders()
+        {
+            var blah = new MarathonReminderService()
+            {
+                EventName = "Debug"
+            };
+
+            blah.Start();
+
+            await ReplyAsync(TextUtils.GetInfoText("k"));
         }
 
 
