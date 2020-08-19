@@ -360,9 +360,9 @@ namespace PestoBot.Services
                 _reminderServiceLog.Information("All records sent, ending timer");
                 _reminderTimer.Change(Timeout.Infinite, Timeout.Infinite);
             }
-
-            var filePath = $@"{EventName}\{fileName}.csv";
-            var processingPath = $@"{EventName}\{fileName}_Processing.csv";
+            var separator = Path.DirectorySeparatorChar;
+            var filePath = $@"{EventName}{separator}{fileName}.csv";
+            var processingPath = $@"{EventName}{separator}{fileName}_Processing.csv";
 
             try
             {
