@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Castle.Core.Internal;
 using CsvHelper;
 using Discord;
 using Discord.Commands;
@@ -262,29 +263,46 @@ namespace PestoBot.Services
                 await reminderChannel.SendMessageAsync(eventTaskAssignment.ReminderText);
             }
         }
+
     }
 
     public  class MarathonReminderService : ReminderService
     {
-        //Timing Stuff
+        //Timing Stuff & File done flags
         private int _behind = 0;
+        private bool RunnersDone = false;
+        private bool VolunteersDone = false;
 
         //Runner Headers
         private const string ContentHeader = "Content";
         private const string DiscordUserHeader = "DiscordUserName";
         private const string ScheduleTimeHeader = "Scheduled";
+        private const string VolunteerTypeHeader = "VolunteerType";
+        private const string CategoryHeader = "Category";
         private const string GameHeader = "Game";
+        private const string SentHeader = "Sent";
 
         //Volunteer Headers
 
         //Filename Stuff
-        // ReSharper disable InconsistentNaming
-        private const string KEY_RUNNERS = "Runners";
-        private const string KEY_HOSTS = "Hosts";
-        private const string KEY_RESTREAM = "Restreamers";
-        private const string KEY_SETUP = "Setup";
-        private const string KEY_SOCIAL_MEDIA = "Social_Media";
-        // ReSharper restore InconsistentNaming
+        private const string Filename_Runners = "runners";
+        private const string Filename_Volunteers = "volunteers";
+        private const string Filename_Hosts = "hosts";
+        private const string Filename_Restreamers = "restreamers";
+        private const string Filename_Setup = "setup";
+        private const string Filename_Social_Media = "social_media";
+        //private readonly List<string> _listFileNames = new List<string>
+        //{
+        //    Filename_Runners, Filename_Hosts, Filename_Restreamers, Filename_Setup, Filename_Social_Media
+        //};    
+        //private readonly List<string> _listFileNames = new List<string>
+        //{
+        //    Filename_Runners, Filename_Volunteers
+        //}; 
+        private readonly List<string> _listFileNames = new List<string>
+        {
+            Filename_Runners, Filename_Volunteers
+        };
 
         public string EventName { get; set; }
         
@@ -309,53 +327,98 @@ namespace PestoBot.Services
         protected internal override void FireRemindersByAssignmentType()
         {
 
-            _reminderServiceLog.Information($"Checking reminders for {EventName}");
-            //Handle Runners
-            ReadReminderCSV("runners");
-            //Handle Hosts
+            _reminderServiceLog.Verbose($"Checking reminders for {EventName}");
 
-            //Handle Restreamers
-
-            //Handle Setup
-
-            //Handle Social Media
-
+            foreach (var fileName in _listFileNames)
+            {
+                ReadReminderCSV(fileName);
+            }
         }
 
         private void ReadReminderCSV(string fileName)
         {
+            switch (fileName)
+            {
+                case Filename_Runners:
+                    if (RunnersDone)
+                    {
+                        return;
+                    }
+                    break;
+                case Filename_Volunteers:
+                    if (VolunteersDone)
+                    {
+                        return;
+                    }
+                    break;
+
+                default: throw new ArgumentException($"{fileName} is invalid!");
+            }
+
+            if (RunnersDone && VolunteersDone)
+            {
+                _reminderServiceLog.Information("All records sent, ending timer");
+                _reminderTimer.Change(Timeout.Infinite, Timeout.Infinite);
+            }
+
+            var filePath = $@"{EventName}\{fileName}.csv";
+            var processingPath = $@"{EventName}\{fileName}_Processing.csv";
 
             try
             {
-                var filePath = $@"{EventName}\{fileName}.csv";
-                var records = new List<object>();
-
+                
+                var records = new List<ReminderRecord>();
+                //Setup the CSV Reader
                 using var reader = new StreamReader(filePath);
                 using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
-                csv.Configuration.Delimiter = ";"; //Horaro uses ;, yay
+                csv.Configuration.MissingFieldFound = null;
                 csv.Read();
                 csv.ReadHeader();
 
+                //Read the CSV and populate list of records
                 while (csv.Read())
                 {
-                    var record = new
+                    var record = new ReminderRecord
                     {
-                        RunStart = csv.GetField<DateTime>(ScheduleTimeHeader),
+                        Scheduled = csv.GetField<DateTime>(ScheduleTimeHeader),
                         Game = csv.GetField<string>(GameHeader),
-                        Username = csv.GetField<string>(DiscordUserHeader), 
-                        //Sent = csv.GetField<string>(DiscordUserHeader)
+                        VolunteerType = csv.GetField<string>(VolunteerTypeHeader),
+                        Category = csv.GetField<string>(CategoryHeader),
+                        DiscordUserName = csv.GetField<string>(DiscordUserHeader), 
+                        Sent = csv.GetField<int>(SentHeader)
                     };
 
                     records.Add(record);
                 }
 
-                using (var writer = new StreamWriter($@"{EventName}\{fileName}_Processing.csv"))
-                using (var csv2 = new CsvWriter(writer, CultureInfo.InvariantCulture))
+                //Process the reminders here, send any reminders that are due & update the sent flag
+                var processedRecords = ProcessReminderRecords(records).ToList();
+
+                //Mark the file done if all rows have been sent
+                if (processedRecords.Count(x => x.Sent == 1) == processedRecords.Count)
                 {
-                    csv2.WriteRecords(records);
+                    switch (fileName)
+                    {
+                        case Filename_Runners:
+                            RunnersDone = true;
+                            break;
+                        case Filename_Volunteers:
+                            VolunteersDone = true;
+                            break;
+
+                        default: throw new ArgumentException($"{fileName} is invalid!");
+                    }
+                }
+
+                using (var writer = new StreamWriter(processingPath))
+                {
+                    using var csv2 = new CsvWriter(writer, CultureInfo.InvariantCulture);
+                    csv2.WriteRecords(processedRecords);
                 }
                 reader.Close();
-                
+
+                _reminderServiceLog.Verbose($"Replacing file {fileName} with processed content");
+                File.Replace(processingPath, filePath, null); //Replace existing file with processing 
             }
             catch (Exception e)
             {
@@ -363,10 +426,94 @@ namespace PestoBot.Services
             }
         }
 
+        private IEnumerable<ReminderRecord> ProcessReminderRecords(List<ReminderRecord> records)
+        {
+            foreach (var record in records)
+            {
+                _reminderServiceLog.Debug($"Processing record {record.Scheduled}:{record.DiscordUserName}:{record.Game}");
+                if (record.Sent == 0 && IsScheduledTimeWithinReminderRange(record.Scheduled, out var minutes))
+                {
+                    //send any reminders that are due & update the sent flag
+                    record.Sent = 1;
+                    SendReminder(record, minutes);
+                }
+            }
+
+            return records;
+        }
+
+        protected internal void SendReminder(ReminderRecord record, int minutes)
+        {
+            var user = GetUser(record.DiscordUserName);
+            _reminderServiceLog.Information($"Sending record {record.DiscordUserName} : {record.Game} in {minutes} minutes");
+            var reminderMessage = user != null ? user.Mention : record.DiscordUserName.Split('#')[0];
+            ulong channelId = 0;
+            if (!record.VolunteerType.IsNullOrEmpty())
+            {
+                reminderMessage += $" your shift for `Volunteer: {record.VolunteerType}` is coming up in **{minutes} minutes!**";
+                channelId = 738224182587818004; //MWSF Volunteer Reminders
+            }
+            else
+            {
+                reminderMessage += $" your run for `{record.Game}: {record.Category}` is coming up in **{minutes} minutes!**";
+                channelId = 738222137449381888; //MWSF Runner Reminders
+            }
+            ((IMessageChannel) _client.GetChannel(channelId)).SendMessageAsync(reminderMessage);
+        }
+
+        private IUser GetUser(string discordNameOrId)
+        {
+            var isId = ulong.TryParse(discordNameOrId, out var id);
+            IUser user;
+            if (isId)
+            {
+                user = _client.GetUser(id);
+            }
+            else
+            {
+                var userName = discordNameOrId.Split('#');
+                user = _client.GetUser(userName[0], userName[1]);
+            }
+
+            return user;
+        }
+
+        protected internal virtual bool IsScheduledTimeWithinReminderRange(DateTime scheduledTime, out int minutes)
+        {
+            var runTime = scheduledTime.AddMinutes(_behind);  //Adjust if marathon is ahead or behind schedule
+            var currentTime = GetCurrentTime();
+            var timeSpan = runTime - currentTime;
+            minutes = timeSpan.Minutes;
+
+            if (runTime < currentTime)
+            {
+                //Do not send a reminder if reminder time already past
+                return false;
+            }
+            //Finally, determine if within reminder window and return result
+            return timeSpan <= TimeSpan.FromMinutes((int)ReminderTimes.Task+1); //Makes most messages say 30m not 29
+        } 
+
     }
 }
 
+public class ReminderRecord
+{
+    public DateTime Scheduled { get; set; }
+    public string Game { get; set; }
+    public string Category { get; set; }
+    public string VolunteerType { get; set; }
+    public string DiscordUserName { get; set; }
+    public int Sent { get; set; }
+
+}
+
 /*
+                        Scheduled = csv.GetField<DateTime>(ScheduleTimeHeader),
+                        Game = csv.GetField<string>(GameHeader),
+                        DiscordUserName = csv.GetField<string>(DiscordUserHeader), 
+                        Sent = csv.GetField<string>(SentHeader)
+
             var isId = ulong.TryParse(pingTarget, out var id);
             IUser user;
             if (isId)

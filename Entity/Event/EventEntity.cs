@@ -9,6 +9,12 @@ namespace PestoBot.Entity.Event
     {
         private readonly EventApi _api;
 
+        public string Name
+        {
+            get => Model.Name; 
+            set => Model.Name =value;
+        }
+
         public EventEntity(EventModel model)
         {
             _api = new EventApi();
