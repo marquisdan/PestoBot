@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -17,7 +16,6 @@ using PestoBot.Api.Common;
 using PestoBot.Api.Event;
 using PestoBot.Common;
 using PestoBot.Database.Models.Event;
-using PestoBot.Database.Models.SpeedrunEvent;
 using Serilog;
 using Serilog.Core;
 using Serilog.Events;
@@ -48,15 +46,14 @@ namespace PestoBot.Services
         protected Microsoft.Extensions.Logging.ILogger _logger;
         protected IServiceProvider _serviceProvider;
 
-        // ReSharper disable once NotAccessedField.Local
-        protected Timer _reminderTimer;
-        protected readonly ILogger _reminderServiceLog; //separate log to filter out Reminder Service events 
+        protected Timer ReminderTimer;
+        protected readonly ILogger ReminderServiceLog; //separate log to filter out Reminder Service events 
 
         public ReminderService(IServiceProvider services)
         {
             // ReSharper disable VirtualMemberCallInConstructor
             InitServices(services);
-            _reminderServiceLog = CreateReminderServiceLoggerConfiguration();
+            ReminderServiceLog = CreateReminderServiceLoggerConfiguration();
 
             //Populate reminder lists
             _oneTimeReminderTypes = new List<ReminderTypes>
@@ -78,7 +75,7 @@ namespace PestoBot.Services
             _serviceProvider = ServicesConfiguration.GetServiceProvider();
             InitServices(_serviceProvider);
 
-            _reminderServiceLog = CreateReminderServiceLoggerConfiguration();
+            ReminderServiceLog = CreateReminderServiceLoggerConfiguration();
             //Populate reminder lists
             _oneTimeReminderTypes = new List<ReminderTypes>
             {
@@ -127,28 +124,28 @@ namespace PestoBot.Services
 
         internal virtual void WakeReminderService(object state)
         {
-            _reminderServiceLog.Verbose($"{DateTime.Now.ToString(LogDateFormat)} : Waking Reminder Service");
+            ReminderServiceLog.Verbose($"{DateTime.Now.ToString(LogDateFormat)} : Waking Reminder Service");
             FireRemindersByAssignmentType();
-            _reminderServiceLog.Verbose($"{DateTime.Now.ToString(LogDateFormat)} : Reminder Service Sleeping");
+            ReminderServiceLog.Verbose($"{DateTime.Now.ToString(LogDateFormat)} : Reminder Service Sleeping");
         }
 
         protected internal virtual void FireRemindersByAssignmentType()
         {
             //Always process One-time reminders
-            _reminderServiceLog.Information($"Processing one time reminders");
+            ReminderServiceLog.Information($"Processing one time reminders");
             ProcessReminders(ReminderTypes.Task);
 
             //Process Recurring Reminders
             if (IsTimeToProcessRecurringReminders(ReminderTimes.Project))
             {
-                _reminderServiceLog.Information("Processing recurring reminders");
+                ReminderServiceLog.Information("Processing recurring reminders");
                 ProcessReminders(ReminderTypes.Project);
             }
 
             //Process Debug Reminders
             if (IsTimeToProcessRecurringReminders(ReminderTimes.GoobyTime))
             {
-                _reminderServiceLog.Information("Processing Debug Reminders");
+                ReminderServiceLog.Information("Processing Debug Reminders");
                 ProcessReminders(ReminderTypes.DebugTask);
             }
         }
@@ -163,7 +160,7 @@ namespace PestoBot.Services
         {
             if (type == ReminderTypes.Project)
             {
-                _reminderServiceLog.Warning("Recurring reminders are disabled until design refactor is complete");
+                ReminderServiceLog.Warning("Recurring reminders are disabled until design refactor is complete");
                 return;
             }
             //Get list of Event Assignments by type 
@@ -241,7 +238,7 @@ namespace PestoBot.Services
         protected virtual ulong? GetReminderChannelForType(SocketGuild guild, ReminderTypes reminderType)
         {
             var channel = new GuildSettingsApi().GetReminderChannelForType(guild.Id, reminderType);
-            if(channel == null) { _reminderServiceLog.Warning($"{guild.Name} does not have a type {reminderType} channel set");}
+            if(channel == null) { ReminderServiceLog.Warning($"{guild.Name} does not have a type {reminderType} channel set");}
             return channel;
         }
 
@@ -254,7 +251,7 @@ namespace PestoBot.Services
             if (logChannelId == null)
             {
                 //Check if the guild has that type of channel set
-                _reminderServiceLog.Error($"Could not send reminder. {guild.Name} is likely missing a {reminderType} reminder channel");
+                ReminderServiceLog.Error($"Could not send reminder. {guild.Name} is likely missing a {reminderType} reminder channel");
             }
             else
             {
@@ -268,12 +265,28 @@ namespace PestoBot.Services
 
     public  class MarathonReminderService : ReminderService
     {
-        //Timing Stuff & File done flags
-        private int _behind = 0;
-        private bool RunnersDone = false;
-        private bool VolunteersDone = false;
+        #region Properties & Fields
 
-        //Runner Headers
+        internal ulong StatusChannelId; //For sending statuses back to where the service started.
+
+        //Timing Stuff & File done flags
+        private int _minutesBehind = 0;
+        private bool _runnersDone = false;
+        private bool _volunteersDone = false;
+
+        //Filepath stuff
+        private static readonly char Separator = Path.DirectorySeparatorChar;
+        private const string LockFileName = "LockFile.txt";
+        private const string EndRunFileName = "EndRun";
+        internal const string MinutesBehindFileName = "minutesBehind";
+        private string _filePath;
+
+        private readonly List<string> _listFileNames = new List<string>
+        {
+            LockFileName, EndRunFileName, MinutesBehindFileName
+        };
+
+        //CSV Headers
         private const string ContentHeader = "Content";
         private const string DiscordUserHeader = "DiscordUserName";
         private const string ScheduleTimeHeader = "Scheduled";
@@ -282,71 +295,205 @@ namespace PestoBot.Services
         private const string GameHeader = "Game";
         private const string SentHeader = "Sent";
 
-        //Volunteer Headers
-
         //Filename Stuff
         private const string Filename_Runners = "runners";
         private const string Filename_Volunteers = "volunteers";
-        private const string Filename_Hosts = "hosts";
-        private const string Filename_Restreamers = "restreamers";
-        private const string Filename_Setup = "setup";
-        private const string Filename_Social_Media = "social_media";
-        //private readonly List<string> _listFileNames = new List<string>
-        //{
-        //    Filename_Runners, Filename_Hosts, Filename_Restreamers, Filename_Setup, Filename_Social_Media
-        //};    
-        //private readonly List<string> _listFileNames = new List<string>
-        //{
-        //    Filename_Runners, Filename_Volunteers
-        //}; 
-        private readonly List<string> _listFileNames = new List<string>
+
+        private readonly List<string> _listCsvNames = new List<string>
         {
             Filename_Runners, Filename_Volunteers
         };
 
         public string EventName { get; set; }
-        
+
+        #endregion
+
+        #region Constructors & Destructors
+
         public MarathonReminderService(IServiceProvider services) : base(services)
         {
             if(_serviceProvider == null){ _serviceProvider = ServicesConfiguration.GetServiceProvider();}
+
+            _filePath = $"{EventName}{Separator}";
+        }
+
+        public MarathonReminderService(IServiceProvider services, ulong statusChannelId, string eventName)
+        {
+            if (_serviceProvider == null) { _serviceProvider = ServicesConfiguration.GetServiceProvider(); }
+            StatusChannelId = statusChannelId;
+            EventName = eventName;
+            _filePath = $"{eventName}{Separator}";
+        }
+
+        public MarathonReminderService(ulong statusChannelId, string eventName)
+        {
+            _serviceProvider = ServicesConfiguration.GetServiceProvider();
+            StatusChannelId = statusChannelId;
+            EventName = eventName;
+            _filePath = $"{eventName}{Separator}";
         }
 
         public MarathonReminderService() : base() { }
 
+        #endregion
+
         internal override void Start()
         {
-            _reminderTimer = new Timer(WakeReminderService, null, 0, Minute * 1);
+            _filePath = $"{EventName}{Separator}";
+            if (DoesLockFileExist() == false)
+            {
+                ClearFiles();
+                CreateLockFile();
+                ReminderTimer = new Timer(WakeReminderService, null, 0, Minute * 1);
+            }
+            else
+            {
+                throw new Exception($"Cannot start - Reminder Service for {EventName} already running!");
+            }
+
         }
 
-        protected void SetBehind(int behind)
+        #region Static methods for communicating with service
+        internal static void EndRun(string eventName)
         {
-            _behind = behind;
-            _reminderTimer.Change(0, Minute * behind);
+            var writer = new StreamWriter($"{eventName}{Separator}{EndRunFileName}");
+            writer.Write("End of the line");
+            writer.Close();
+        }
+
+        internal static void SetMinutesBehind(string eventName, int minutes)
+        {
+            var path = $"{eventName}{Separator}{MinutesBehindFileName}";
+            //First, delete existing file
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+            }
+
+            //Write a new file containing the minutes behind
+            var writer = new StreamWriter(path);
+            writer.Write(minutes.ToString());
+            writer.Close();
+        }
+
+        internal static bool DoesLockFileExist(string eventName)
+        {
+            var path = $"{eventName}{Separator}{LockFileName}";
+            return File.Exists(path);
+        }
+
+        #endregion
+
+        #region Dynamic file interaction
+
+        private void ClearFiles()
+        {
+            //Clear files used to communicate with client
+            foreach (var file in _listFileNames)
+            {
+                var path = $"{_filePath}{file}";
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+            }
+        }
+
+        private void CreateLockFile()
+        {
+            CreateFile(LockFileName);
+        }
+
+        private void CreateFile(string fileName)
+        {
+            var writer = new StreamWriter($"{_filePath}{fileName}");
+            writer.Write("file created, yo");
+            writer.Close();
+        }
+
+        private bool DoesLockFileExist()
+        {
+            return File.Exists($"{_filePath}{LockFileName}");
+        }
+
+        private bool DoesEndRunFileExist()
+        {
+            return File.Exists($"{_filePath}{EndRunFileName}");
+        }
+
+        #endregion
+
+        protected void UpdateTimeBehind()
+        {
+            var path = $"{EventName}{Separator}{MinutesBehindFileName}";
+            string txt = "";
+            if (File.Exists(path))
+            {
+                txt = File.ReadAllText(path);
+            }
+
+            var canParseFile = int.TryParse(txt, out int minutes);
+
+            if (canParseFile == false && File.Exists(path))
+            {
+                ReminderServiceLog.Error($"Unable to parse {path}. [{txt}] is not a valid integer");
+                return;
+            }
+
+            if (txt.IsNullOrEmpty())
+            {
+                _minutesBehind = 0;
+            }
+            else
+            {
+                _minutesBehind = minutes;
+            }
+            
         }
 
         protected internal override void FireRemindersByAssignmentType()
         {
-
-            _reminderServiceLog.Verbose($"Checking reminders for {EventName}");
-
-            foreach (var fileName in _listFileNames)
+            //First, check if end run file exists, exit immediately if it does
+            if (DoesEndRunFileExist())
             {
-                ReadReminderCSV(fileName);
+                ReminderServiceLog.Debug($"End run file found. Preventing further reads for {EventName} and shutting down");
+                KillTimer();
+                ClearFiles();
+                return;
+            }
+
+            ReminderServiceLog.Verbose($"Checking reminders for {EventName}");
+
+            foreach (var fileName in _listCsvNames)
+            {
+                ReadReminderCsv(fileName);
             }
         }
 
-        private void ReadReminderCSV(string fileName)
+        private void ReadReminderCsv(string fileName)
         {
+            //if all records have been read in every file, kill the timer
+            if (_runnersDone && _volunteersDone)
+            {
+                ReminderServiceLog.Information($"All records sent, ending {EventName} timer");
+                KillTimer();
+                return;
+            }
+
+            //Update how far we are behind
+            UpdateTimeBehind();
+
+            //Don't process files that are already finished 
             switch (fileName)
             {
                 case Filename_Runners:
-                    if (RunnersDone)
+                    if (_runnersDone)
                     {
                         return;
                     }
                     break;
                 case Filename_Volunteers:
-                    if (VolunteersDone)
+                    if (_volunteersDone)
                     {
                         return;
                     }
@@ -355,14 +502,8 @@ namespace PestoBot.Services
                 default: throw new ArgumentException($"{fileName} is invalid!");
             }
 
-            if (RunnersDone && VolunteersDone)
-            {
-                _reminderServiceLog.Information("All records sent, ending timer");
-                _reminderTimer.Change(Timeout.Infinite, Timeout.Infinite);
-            }
-            var separator = Path.DirectorySeparatorChar;
-            var filePath = $@"{EventName}{separator}{fileName}.csv";
-            var processingPath = $@"{EventName}{separator}{fileName}_Processing.csv";
+            var filePath = $@"{_filePath}{fileName}.csv";
+            var processingPath = $@"{_filePath}{fileName}_Processing.csv";
 
             try
             {
@@ -400,10 +541,10 @@ namespace PestoBot.Services
                     switch (fileName)
                     {
                         case Filename_Runners:
-                            RunnersDone = true;
+                            _runnersDone = true;
                             break;
                         case Filename_Volunteers:
-                            VolunteersDone = true;
+                            _volunteersDone = true;
                             break;
 
                         default: throw new ArgumentException($"{fileName} is invalid!");
@@ -417,20 +558,29 @@ namespace PestoBot.Services
                 }
                 reader.Close();
 
-                _reminderServiceLog.Verbose($"Replacing file {fileName} with processed content");
+                ReminderServiceLog.Verbose($"Replacing file {fileName} with processed content");
                 File.Replace(processingPath, filePath, null); //Replace existing file with processing 
             }
             catch (Exception e)
             {
-                _reminderServiceLog.Error(e.Message);
+                ReminderServiceLog.Error(e.Message);
             }
+        }
+
+        private void KillTimer()
+        {
+            ReminderTimer.Change(Timeout.Infinite, Timeout.Infinite); //stop the timer
+            //Log & send message to user that timer has stopped
+            ReminderServiceLog.Information($"Timer {EventName} ended. Bye bye!");
+            var msg = TextUtils.GetInfoText($"Reminder service for {EventName} stopped successfully");
+            ((IMessageChannel) _client.GetChannel(StatusChannelId)).SendMessageAsync(msg);
         }
 
         private IEnumerable<ReminderRecord> ProcessReminderRecords(List<ReminderRecord> records)
         {
             foreach (var record in records)
             {
-                _reminderServiceLog.Debug($"Processing record {record.Scheduled}:{record.DiscordUserName}:{record.Game}");
+                ReminderServiceLog.Debug($"Processing record {record.Scheduled}:{record.DiscordUserName}:{record.Game}");
                 if (record.Sent == 0 && IsScheduledTimeWithinReminderRange(record.Scheduled, out var minutes))
                 {
                     //send any reminders that are due & update the sent flag
@@ -445,20 +595,40 @@ namespace PestoBot.Services
         protected internal void SendReminder(ReminderRecord record, int minutes)
         {
             var user = GetUser(record.DiscordUserName);
-            _reminderServiceLog.Information($"Sending record {record.DiscordUserName} : {record.Game} in {minutes} minutes");
+            ReminderServiceLog.Information($"Sending record {record.DiscordUserName} : {record.Game} in {minutes} minutes");
             var reminderMessage = user != null ? user.Mention : record.DiscordUserName.Split('#')[0];
             ulong channelId = 0;
             if (!record.VolunteerType.IsNullOrEmpty())
             {
                 reminderMessage += $" your shift for `Volunteer: {record.VolunteerType}` is coming up in **{minutes} minutes!**";
-                channelId = 738224182587818004; //MWSF Volunteer Reminders
+                channelId = GetVolunteerReminderChannel(); //MWSF Volunteer Reminders
             }
             else
             {
                 reminderMessage += $" your run for `{record.Game}: {record.Category}` is coming up in **{minutes} minutes!**";
-                channelId = 738222137449381888; //MWSF Runner Reminders
+                channelId = GetRunnerReminderChannel(); //MWSF Runner Reminders
             }
+
             ((IMessageChannel) _client.GetChannel(channelId)).SendMessageAsync(reminderMessage);
+        }
+
+        private ulong GetVolunteerReminderChannel()
+        {
+            //TODO: Fetch this dynamically from DB 
+            return 738224182587818004;
+           // return GetDebugChannel();
+        }
+
+        private ulong GetRunnerReminderChannel()
+        {
+            //TODO: Fetch this dynamically from DB 
+            return 738222137449381888;
+          //  return GetDebugChannel();
+        }
+
+        private ulong GetDebugChannel()
+        {
+            return 745655771181744258;
         }
 
         private IUser GetUser(string discordNameOrId)
@@ -480,7 +650,7 @@ namespace PestoBot.Services
 
         protected internal virtual bool IsScheduledTimeWithinReminderRange(DateTime scheduledTime, out int minutes)
         {
-            var runTime = scheduledTime.AddMinutes(_behind);  //Adjust if marathon is ahead or behind schedule
+            var runTime = scheduledTime.AddMinutes(_minutesBehind);  //Adjust if marathon is ahead or behind schedule
             var currentTime = GetCurrentTime();
             var timeSpan = runTime - currentTime;
             minutes = timeSpan.Minutes;
@@ -496,35 +666,3 @@ namespace PestoBot.Services
 
     }
 }
-
-public class ReminderRecord
-{
-    public DateTime Scheduled { get; set; }
-    public string Game { get; set; }
-    public string Category { get; set; }
-    public string VolunteerType { get; set; }
-    public string DiscordUserName { get; set; }
-    public int Sent { get; set; }
-
-}
-
-/*
-                        Scheduled = csv.GetField<DateTime>(ScheduleTimeHeader),
-                        Game = csv.GetField<string>(GameHeader),
-                        DiscordUserName = csv.GetField<string>(DiscordUserHeader), 
-                        Sent = csv.GetField<string>(SentHeader)
-
-            var isId = ulong.TryParse(pingTarget, out var id);
-            IUser user;
-            if (isId)
-            {
-                user = Context.Client.GetUserAsync(id).Result;
-            }
-            else
-            {
-                var userName = pingTarget.Split('#');
-                user = Context.Client.GetUserAsync(userName[0], userName[1]).Result;
-            }
-
-            await ReplyAsync($"{user.Mention} test");
-*/

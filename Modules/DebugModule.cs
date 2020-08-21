@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using Castle.Core.Internal;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
@@ -17,7 +17,6 @@ using PestoBot.Database.Repositories.Guild;
 using PestoBot.Database.Repositories.SpeedrunEvent;
 using PestoBot.Entity;
 using PestoBot.Entity.Event;
-using PestoBot.Services;
 using Serilog;
 using SQLitePCL;
 
@@ -231,25 +230,6 @@ namespace PestoBot.Modules
             }
 
             await ReplyAsync($"{user.Mention} test");
-        }
-
-        [RequireOwner]
-        [Command("StartReminders")]
-        public async Task StartReminders(string eventName)
-        {
-            if (eventName.IsNullOrEmpty())
-            {
-                eventName = EventUtils.GetNextEventForGuild(Context.Guild.Id).Name;
-            }
-
-            var svc = new MarathonReminderService()
-            {
-                EventName = eventName
-            };
-
-            svc.Start();
-
-            await ReplyAsync(TextUtils.GetInfoText($"Starting reminders for {eventName}"));
         }
 
 
