@@ -329,7 +329,7 @@ namespace PestoBot.Services
             foreach (var record in records)
             {
                 ReminderServiceLog.Debug($"Processing record {record.Scheduled}:{record.DiscordUserName}:{record.Game}");
-                if (record.Sent == 0 && IsScheduledTimeWithinReminderRange(record.Scheduled, out var minutes))
+                if (record.Sent == 0 && IsScheduledTimeWithinReminderRange(record, out var minutes))
                 {
                     //send any reminders that are due & update the sent flag
                     record.Sent = 1;
