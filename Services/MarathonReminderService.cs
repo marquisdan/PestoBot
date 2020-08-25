@@ -370,11 +370,11 @@ namespace PestoBot.Services
 
             if (userName.ToLower() == "cajink")
             {
-                msg += $" Cajink's run will start in 30 minutes"!;
+                msg += $" Cajink's run will start in 30 minutes!";
             }
             if(userName.ToLower() == "marquisdan" && record.VolunteerType.ToLower() == "host")
             {
-                msg += $" marquisdan's hosting will start in 30 minutes"!;
+                msg += $" marquisdan's hosting will start in 30 minutes!";
             }
 
             bartaan.SendMessageAsync(msg);
