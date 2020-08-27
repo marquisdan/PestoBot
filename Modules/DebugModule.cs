@@ -232,6 +232,12 @@ namespace PestoBot.Modules
             await ReplyAsync($"{user.Mention} test");
         }
 
+        [RequireBotAdmin]
+        [Command("ScreamInternally")]
+        public async Task ScreamInternally()
+        {
+            await ReplyAsync(@"https://www.youtube.com/watch?v=gfkts0u-m6w");
+        }
 
         //[Command("EnableGooby")]
         //[RequireBotAdmin]
