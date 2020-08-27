@@ -360,7 +360,7 @@ namespace PestoBot.Services
             else
             {
                 reminderMessage.Append($" your run for `{record.Game}: {record.Category}` is coming up in **{minutes} minutes!**");
-                reminderMessage.Append($" Please stream to `{rtmp}` with stream key `{record.StreamKey.ToLower()}`");
+              //  reminderMessage.Append($" Please stream to `{rtmp}` with stream key `{record.StreamKey.ToLower()}`");
                 channelId = GetRunnerReminderChannel(); //MWSF Runner Reminders
 
             }
