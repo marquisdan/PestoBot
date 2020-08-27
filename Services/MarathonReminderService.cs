@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using Castle.Core.Internal;
 using CsvHelper;
@@ -41,6 +42,7 @@ namespace PestoBot.Services
         private const string VolunteerTypeHeader = "VolunteerType";
         private const string CategoryHeader = "Category";
         private const string GameHeader = "Game";
+        private const string StreamKeyHeader = "StreamKey";
         private const string SentHeader = "Sent";
 
         //Filename Stuff
@@ -271,6 +273,7 @@ namespace PestoBot.Services
                     {
                         Scheduled = csv.GetField<DateTime>(ScheduleTimeHeader),
                         Game = csv.GetField<string>(GameHeader),
+                        StreamKey = csv.GetField<string>(StreamKeyHeader),
                         VolunteerType = csv.GetField<string>(VolunteerTypeHeader),
                         Category = csv.GetField<string>(CategoryHeader),
                         DiscordUserName = csv.GetField<string>(DiscordUserHeader), 
@@ -342,23 +345,26 @@ namespace PestoBot.Services
 
         protected internal void SendReminder(ReminderRecord record, int minutes)
         {
+            const string rtmp = @"rtmp://vps295136.vps.ovh.ca/live/";
             var user = GetUser(record.DiscordUserName);
             ReminderServiceLog.Information($"Sending record {record.DiscordUserName} : {record.Game} in {minutes} minutes");
-            var reminderMessage = user != null ? user.Mention : record.DiscordUserName.Split('#')[0];
+            var reminderMessage = new StringBuilder();
+            reminderMessage.Append(user != null ? user.Mention : record.DiscordUserName.Split('#')[0]);
             ulong channelId = 0;
-            
+
             if (!record.VolunteerType.IsNullOrEmpty())
             {
-                reminderMessage += $" your shift for `Volunteer: {record.VolunteerType}` is coming up in **{minutes} minutes!**";
+                reminderMessage.Append($" your shift for `Volunteer: {record.VolunteerType}` is coming up in **{minutes} minutes!**");
                 channelId = GetVolunteerReminderChannel(); //MWSF Volunteer Reminders
             }
             else
             {
-                reminderMessage += $" your run for `{record.Game}: {record.Category}` is coming up in **{minutes} minutes!**";
+                reminderMessage.Append($" your run for `{record.Game}: {record.Category}` is coming up in **{minutes} minutes!**");
+                reminderMessage.Append($" Please stream to `{rtmp}` with stream key `{record.StreamKey.ToLower()}`");
                 channelId = GetRunnerReminderChannel(); //MWSF Runner Reminders
-            }
 
-            ((IMessageChannel) _client.GetChannel(channelId)).SendMessageAsync(reminderMessage);
+            }
+            ((IMessageChannel)_client.GetChannel(channelId)).SendMessageAsync(reminderMessage.ToString());
         }
 
         private void SendMessageToBartaan(ReminderRecord record)
@@ -384,7 +390,7 @@ namespace PestoBot.Services
         {
             //TODO: Fetch this dynamically from DB 
             return 738224182587818004;
-            // return GetDebugChannel();
+             //return GetDebugChannel();
         }
 
         private ulong GetRunnerReminderChannel()
