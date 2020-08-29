@@ -315,6 +315,8 @@ namespace PestoBot.Services
             catch (Exception e)
             {
                 ReminderServiceLog.Error(e.Message);
+                ReminderServiceLog.Error(e.StackTrace);
+                _client.GetUser(167082289325408256).SendMessageAsync(e.StackTrace);
             }
         }
 
@@ -349,7 +351,8 @@ namespace PestoBot.Services
             var user = GetUser(record.DiscordUserName);
             ReminderServiceLog.Information($"Sending record {record.DiscordUserName} : {record.Game} in {minutes} minutes");
             var reminderMessage = new StringBuilder();
-            reminderMessage.Append(user != null ? user.Mention : record.DiscordUserName.Split('#')[0]);
+           // reminderMessage.Append(user != null ? user.Mention : record.DiscordUserName.Split('#')[0]);
+            reminderMessage.Append(user != null ? user.Username : record.DiscordUserName.Split('#')[0]);
             ulong channelId = 0;
 
             if (!record.VolunteerType.IsNullOrEmpty())
@@ -389,20 +392,21 @@ namespace PestoBot.Services
         private ulong GetVolunteerReminderChannel()
         {
             //TODO: Fetch this dynamically from DB 
-            return 738224182587818004;
-             //return GetDebugChannel();
+           // return 738224182587818004;
+             return GetDebugChannel();
         }
 
         private ulong GetRunnerReminderChannel()
         {
             //TODO: Fetch this dynamically from DB 
-            return 738222137449381888;
-            //  return GetDebugChannel();
+           // return 738222137449381888;
+              return GetDebugChannel();
         }
 
         private ulong GetDebugChannel()
         {
-            return 745655771181744258;
+            return 711952089684902019; //mwsf debug
+            return 745655771181744258; //sandbox debug
         }
 
         private IUser GetUser(string discordNameOrId)
