@@ -351,8 +351,8 @@ namespace PestoBot.Services
             var user = GetUser(record.DiscordUserName);
             ReminderServiceLog.Information($"Sending record {record.DiscordUserName} : {record.Game} in {minutes} minutes");
             var reminderMessage = new StringBuilder();
-           // reminderMessage.Append(user != null ? user.Mention : record.DiscordUserName.Split('#')[0]);
-            reminderMessage.Append(user != null ? user.Username : record.DiscordUserName.Split('#')[0]);
+            reminderMessage.Append(user != null ? user.Mention : record.DiscordUserName.Split('#')[0]);
+           // reminderMessage.Append(user != null ? user.Username : record.DiscordUserName.Split('#')[0]); no tag for debug
             ulong channelId = 0;
 
             if (!record.VolunteerType.IsNullOrEmpty())
@@ -392,20 +392,20 @@ namespace PestoBot.Services
         private ulong GetVolunteerReminderChannel()
         {
             //TODO: Fetch this dynamically from DB 
-           // return 738224182587818004;
-             return GetDebugChannel();
+             return 738224182587818004;
+           //  return GetDebugChannel();
         }
 
         private ulong GetRunnerReminderChannel()
         {
             //TODO: Fetch this dynamically from DB 
-           // return 738222137449381888;
-              return GetDebugChannel();
-        }
+              return 738222137449381888;
+            //  return GetDebugChannel();
+        } 
 
         private ulong GetDebugChannel()
         {
-            return 711952089684902019; //mwsf debug
+           // return 711952089684902019; //mwsf debug
             return 745655771181744258; //sandbox debug
         }
 
